@@ -46,5 +46,16 @@ public class GlobalExceptionHandler {
 
 	    return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
 	}
+	
+	@ExceptionHandler(EmailAlreadyExistsException.class)
+	public ResponseEntity<ErrorResponseDto> handledPropertyNotFound(EmailAlreadyExistsException ex,WebRequest webRequest) {
+		       ErrorResponseDto er=new ErrorResponseDto(
+		    		   webRequest.getDescription(false),
+		    		    HttpStatus.BAD_REQUEST,
+		    		    ex.getMessage(),
+		    		    LocalDateTime.now()
+		    		    );
+		return new ResponseEntity<>(er,HttpStatus.BAD_REQUEST);
+	}
 
 }
