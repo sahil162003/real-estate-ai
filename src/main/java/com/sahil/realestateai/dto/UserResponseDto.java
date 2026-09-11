@@ -2,7 +2,7 @@ package com.sahil.realestateai.dto;
 
 import java.time.LocalDateTime;
 
-import com.sahil.realestateai.user.Role;
+import com.sahil.realestateai.entity.Role;
 
 import lombok.Data;
 

@@ -5,8 +5,8 @@ import org.mapstruct.Mapper;
 import com.sahil.realestateai.dto.PropertyRequestDto;
 import com.sahil.realestateai.dto.PropertyResponseDto;
 import com.sahil.realestateai.dto.UserRegisterDto;
-import com.sahil.realestateai.property.Property;
-import com.sahil.realestateai.user.User;
+import com.sahil.realestateai.entity.Property;
+import com.sahil.realestateai.entity.User;
 
 @Mapper(componentModel = "spring")
 public interface PropertyMapper {

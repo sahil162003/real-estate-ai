@@ -1,4 +1,4 @@
-package com.sahil.realestateai.property;
+package com.sahil.realestateai.controller;
 
 import java.util.List;
 
@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.sahil.realestateai.dto.PropertyRequestDto;
 import com.sahil.realestateai.dto.PropertyResponseDto;
+import com.sahil.realestateai.service.PropertyService;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

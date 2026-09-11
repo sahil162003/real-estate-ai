@@ -4,7 +4,7 @@ import org.mapstruct.Mapper;
 
 import com.sahil.realestateai.dto.UserRegisterDto;
 import com.sahil.realestateai.dto.UserResponseDto;
-import com.sahil.realestateai.user.User;
+import com.sahil.realestateai.entity.User;
 
 @Mapper(componentModel = "spring")
 

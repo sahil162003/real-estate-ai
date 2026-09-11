@@ -1,4 +1,4 @@
-package com.sahil.realestateai.property;
+package com.sahil.realestateai.service;
 
 import java.util.List;
 import java.util.Optional;
@@ -8,8 +8,10 @@ import org.springframework.stereotype.Service;
 
 import com.sahil.realestateai.dto.PropertyRequestDto;
 import com.sahil.realestateai.dto.PropertyResponseDto;
+import com.sahil.realestateai.entity.Property;
 import com.sahil.realestateai.exception.PropertyNotFoundException;
 import com.sahil.realestateai.mapper.PropertyMapper;
+import com.sahil.realestateai.repository.PropertyRepository;
 
 import lombok.RequiredArgsConstructor;
 

@@ -1,4 +1,4 @@
-package com.sahil.realestateai.user;
+package com.sahil.realestateai.entity;
 
 import java.time.LocalDateTime;
 
