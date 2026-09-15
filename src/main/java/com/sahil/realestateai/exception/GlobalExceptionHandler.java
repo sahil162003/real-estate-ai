@@ -65,4 +65,19 @@ public class GlobalExceptionHandler {
 
         return new ResponseEntity<>(response, HttpStatus.CONFLICT);
     }
+    
+    @ExceptionHandler(InvalidCredentials.class)
+    public ResponseEntity<ErrorResponseDto> handleEmailAlreadyExists(
+    		InvalidCredentials ex,
+            WebRequest webRequest) {
+
+        ErrorResponseDto response = new ErrorResponseDto(
+                webRequest.getDescription(false),
+                HttpStatus.UNAUTHORIZED,
+                ex.getMessage(),
+                LocalDateTime.now()
+        );
+
+        return new ResponseEntity<>(response, HttpStatus.CONFLICT);
+    }
 }
