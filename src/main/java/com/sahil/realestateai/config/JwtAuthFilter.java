@@ -1,3 +1,4 @@
+
 package com.sahil.realestateai.config;
 
 import java.io.IOException;
@@ -9,9 +10,7 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-import com.sahil.realestateai.config.CustomUserDetailsService;
-import com.sahil.realestateai.config.JwtService;
-
+import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -32,50 +31,158 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             FilterChain filterChain)
             throws ServletException, IOException {
 
-        final String authHeader = request.getHeader("Authorization");
+        String path = request.getServletPath();
 
-        String username = null;
-        String jwt = null;
+        /*
+         * Public authentication endpoints
+         *
+         * These endpoints do NOT require a JWT.
+         */
+        if (path.equals("/api/users/login")
+                || path.equals("/api/users/register")) {
 
-        // Check whether Authorization header exists
-        if (authHeader != null && authHeader.startsWith("Bearer ")) {
-
-            jwt = authHeader.substring(7);
-
-            try {
-                username = jwtService.extractUsername(jwt);
-            } catch (Exception e) {
-                // Invalid JWT
-                System.out.println("Invalid JWT token: " + e.getMessage());
-            }
+            filterChain.doFilter(request, response);
+            return;
         }
 
-        // Authenticate user if username was extracted
-        if (username != null
-                && SecurityContextHolder.getContext().getAuthentication() == null) {
+        String authHeader = request.getHeader("Authorization");
 
-            UserDetails userDetails =
-                    userDetailsService.loadUserByUsername(username);
+        /*
+         * No Authorization header
+         */
+        if (authHeader == null) {
 
-            if (jwtService.validateToken(jwt, userDetails)) {
+            sendUnauthorized(
+                    response,
+                    "Authentication token is required"
+            );
 
-                UsernamePasswordAuthenticationToken authentication =
-                        new UsernamePasswordAuthenticationToken(
-                                userDetails,
-                                null,
-                                userDetails.getAuthorities()
-                        );
-
-                authentication.setDetails(
-                        new WebAuthenticationDetailsSource()
-                                .buildDetails(request)
-                );
-
-                SecurityContextHolder.getContext()
-                        .setAuthentication(authentication);
-            }
+            return;
         }
 
+        /*
+         * Authorization header exists,
+         * but it is not using Bearer authentication.
+         */
+        if (!authHeader.startsWith("Bearer ")) {
+
+            sendUnauthorized(
+                    response,
+                    "Invalid Authorization header"
+            );
+
+            return;
+        }
+
+        /*
+         * Extract JWT
+         */
+        String jwt = authHeader.substring(7);
+
+        /*
+         * Empty Bearer token
+         */
+        if (jwt.isBlank()) {
+
+            sendUnauthorized(
+                    response,
+                    "JWT token is required"
+            );
+
+            return;
+        }
+
+        try {
+
+            /*
+             * Extract username/email from JWT
+             */
+            String username =
+                    jwtService.extractUsername(jwt);
+
+            /*
+             * Authenticate only if SecurityContext
+             * doesn't already contain authentication.
+             */
+            if (username != null
+                    && SecurityContextHolder
+                            .getContext()
+                            .getAuthentication() == null) {
+
+                UserDetails userDetails =
+                        userDetailsService
+                                .loadUserByUsername(username);
+
+                /*
+                 * Validate JWT against user details
+                 */
+                if (jwtService.validateToken(
+                        jwt,
+                        userDetails)) {
+
+                    UsernamePasswordAuthenticationToken authentication =
+                            new UsernamePasswordAuthenticationToken(
+                                    userDetails,
+                                    null,
+                                    userDetails.getAuthorities()
+                            );
+
+                    authentication.setDetails(
+                            new WebAuthenticationDetailsSource()
+                                    .buildDetails(request)
+                    );
+
+                    SecurityContextHolder
+                            .getContext()
+                            .setAuthentication(authentication);
+                }
+            }
+
+        } catch (ExpiredJwtException e) {
+
+            sendUnauthorized(
+                    response,
+                    "JWT token has expired"
+            );
+
+            return;
+
+        } catch (Exception e) {
+
+            sendUnauthorized(
+                    response,
+                    "Invalid JWT token"
+            );
+
+            return;
+        }
+
+        /*
+         * Continue to controller / Spring Security
+         */
         filterChain.doFilter(request, response);
+    }
+
+    /**
+     * Sends a standard 401 Unauthorized response.
+     */
+    private void sendUnauthorized(
+            HttpServletResponse response,
+            String message)
+            throws IOException {
+
+        response.setStatus(
+                HttpServletResponse.SC_UNAUTHORIZED
+        );
+
+        response.setContentType("application/json");
+
+        response.getWriter().write(
+                "{"
+                + "\"status\":401,"
+                + "\"error\":\"Unauthorized\","
+                + "\"message\":\"" + message + "\""
+                + "}"
+        );
     }
 }

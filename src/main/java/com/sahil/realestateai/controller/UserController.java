@@ -27,6 +27,7 @@ public class UserController {
 		return userService.createUser(user);
 	}
 	
+	
 	@GetMapping("/login")
 	public String test(@Valid @RequestBody LoginDto loginDto) {
 		
@@ -37,6 +38,7 @@ public class UserController {
 	public String test() {
 		return "token is valid";
 	}
+	
 	
 
 }

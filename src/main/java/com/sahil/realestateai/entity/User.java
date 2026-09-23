@@ -1,6 +1,7 @@
 package com.sahil.realestateai.entity;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
@@ -12,6 +13,7 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -55,6 +57,8 @@ public class User {
 	@NotBlank
 	@Size(max = 255)
 	private String address;
+	
+	
 	
 	@CreationTimestamp
 	private LocalDateTime createdAt;
