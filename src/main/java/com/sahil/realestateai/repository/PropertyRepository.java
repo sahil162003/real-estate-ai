@@ -7,6 +7,5 @@ import com.sahil.realestateai.entity.Property;
 
 public interface PropertyRepository  extends JpaRepository<Property, Long>,JpaSpecificationExecutor<Property> {
 
-	
 
 }

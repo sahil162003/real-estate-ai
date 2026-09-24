@@ -8,6 +8,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import com.sahil.realestateai.dto.PropertyPageResponseDto;
 import com.sahil.realestateai.dto.PropertyRequestDto;
 import com.sahil.realestateai.dto.PropertyResponseDto;
 import com.sahil.realestateai.entity.Property;
@@ -99,9 +100,17 @@ public class PropertyService {
 		return "deleted Successfully";
 	}
 
-	public Page<PropertyResponseDto> searchProperties(String location, Integer bedroom, Double minPrice, Double maxPrice,String sortBy, String sortOrder, int page) {
+	public PropertyPageResponseDto searchProperties(String location, Integer bedroom, Double minPrice, Double maxPrice,String sortBy, String sortOrder, int page) {
 		
-		
+	if(!sortBy.equalsIgnoreCase("price") && !sortBy.equalsIgnoreCase("bedrooms") && !sortBy.equalsIgnoreCase("createdAt")) {
+			throw new IllegalArgumentException("Invalid sortBy parameter. Allowed values are: price, bedrooms, createdAt");
+		}
+	if(!sortOrder.equalsIgnoreCase("asc") && !sortOrder.equalsIgnoreCase("desc")) {
+			throw new IllegalArgumentException("Invalid sortOrder parameter. Allowed values are: asc, desc");
+		}
+	
+	
+	
 		Sort sort = sortOrder.equalsIgnoreCase("asc")
 		        ? Sort.by(sortBy).ascending()
 		        : Sort.by(sortBy).descending();
@@ -115,8 +124,16 @@ public class PropertyService {
 		                    .and(PropertySpecification.hasMinPrice(minPrice))
 		                    .and(PropertySpecification.hasMaxPrice(maxPrice));
 
-		    return propertyRepository
-		            .findAll(specification, pageable)
+		    Page<PropertyResponseDto> propertyPage = propertyRepository.findAll(specification, pageable)
 		            .map(propertyMapper::toResponse);
+		    
+		    return new PropertyPageResponseDto(
+		            propertyPage.getContent(),
+		            propertyPage.getNumber(),
+		            propertyPage.getSize(),
+		            propertyPage.getTotalElements(),
+		            propertyPage.getTotalPages(),
+		            propertyPage.isLast()
+		    );
 	}
 }
