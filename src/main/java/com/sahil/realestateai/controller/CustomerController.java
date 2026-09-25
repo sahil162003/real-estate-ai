@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.sahil.realestateai.dto.PropertyPageResponseDto;
 import com.sahil.realestateai.dto.PropertyResponseDto;
 import com.sahil.realestateai.service.FavoriteService;
+import com.sahil.realestateai.service.PropertyImageService;
 import com.sahil.realestateai.service.PropertyService;
 
 import lombok.RequiredArgsConstructor;
@@ -25,7 +26,7 @@ public class CustomerController {
 	
 	private final PropertyService propertyService;
 	private final FavoriteService favoriteService;
-	
+	private final PropertyImageService propertyImageService;
 	@GetMapping("/test")
 	public String test() {
 		return "Customer API is working fine";
@@ -55,5 +56,11 @@ public class CustomerController {
     @DeleteMapping("/favorites/{propertyId}")
     public String removeFavorite(@PathVariable Long propertyId) {
         return favoriteService.removeFavorite(propertyId);
+    }
+    
+    @GetMapping("/property/{propertyId}/images")
+    public List<String> getImages(@PathVariable Long propertyId) {
+
+        return propertyImageService.getImages(propertyId);
     }
 }

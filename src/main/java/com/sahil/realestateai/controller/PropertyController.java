@@ -1,5 +1,6 @@
 package com.sahil.realestateai.controller;
 
+import java.io.IOException;
 import java.util.List;
 
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -11,9 +12,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.sahil.realestateai.dto.PropertyRequestDto;
 import com.sahil.realestateai.dto.PropertyResponseDto;
+import com.sahil.realestateai.service.PropertyImageService;
 import com.sahil.realestateai.service.PropertyService;
 
 import jakarta.validation.Valid;
@@ -25,6 +28,8 @@ import lombok.RequiredArgsConstructor;
 public class PropertyController {
 
 private final PropertyService propertyService;
+
+private final PropertyImageService propertyImageService;
 	
 @PostMapping("/createProperties")
 public  PropertyResponseDto createProperties( @Valid
@@ -59,6 +64,19 @@ public PropertyResponseDto updateProperty(@PathVariable Long id , @Valid @Reques
 public String deleteProperties(@RequestParam Long id) {
 	System.out.println(id);
 	return propertyService.deleteById(id);
+}
+
+@PostMapping("/{propertyId}/images")
+public String uploadPropertyImage(
+        @PathVariable Long propertyId,
+        @RequestParam("file") MultipartFile file) throws IOException {
+
+    return propertyImageService.addImage(propertyId, file);
+}
+@DeleteMapping("/images/{imageId}")
+public String deleteImage(@PathVariable Long imageId) {
+
+    return propertyImageService.deleteImage(imageId);
 }
 	
 }
