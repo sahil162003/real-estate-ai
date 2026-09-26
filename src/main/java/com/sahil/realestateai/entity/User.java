@@ -50,11 +50,11 @@ public class User {
 	@Column(nullable = false)
 	private Role role= Role.CUSTOMER;
 	
-	@NotBlank
+
 	@Pattern(regexp = "^[6-9]\\d{9}$")
 	private String phoneNumber;
 	
-	@NotBlank
+	
 	@Size(max = 255)
 	private String address;
 	

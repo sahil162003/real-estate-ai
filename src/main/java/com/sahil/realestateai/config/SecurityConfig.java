@@ -1,4 +1,3 @@
-
 package com.sahil.realestateai.config;
 
 import org.springframework.context.annotation.Bean;
@@ -27,29 +26,33 @@ public class SecurityConfig {
 
     private final CustomAccessDeniedHandler
             customAccessDeniedHandler;
+    
+    private final GoogleOAuth2SuccessHandler
+    googleOAuth2SuccessHandler;
 
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
+  
 
     @Bean
     public SecurityFilterChain securityFilterChain(
             HttpSecurity http) throws Exception {
 
         http
-            // Disable CSRF because this is a stateless REST API
+
+            // Disable CSRF because this is a REST API
             .csrf(csrf -> csrf.disable())
 
-            // JWT authentication is stateless
+            // OAuth2 login needs a session during the login process.
+            // JWT authentication remains used for your APIs.
             .sessionManagement(session ->
                 session.sessionCreationPolicy(
-                    SessionCreationPolicy.STATELESS
+                    SessionCreationPolicy.IF_REQUIRED
                 )
             )
 
-            // Disable browser-based authentication
+            // Disable normal HTTP Basic authentication
             .httpBasic(basic -> basic.disable())
+
+            // Disable normal form login
             .formLogin(form -> form.disable())
 
             // Authorization rules
@@ -59,6 +62,8 @@ public class SecurityConfig {
                 .requestMatchers(
                     "/api/users/register",
                     "/api/users/login",
+                    "/oauth2/**",
+                    "/login/oauth2/**",
                     "/error"
                 ).permitAll()
 
@@ -68,7 +73,10 @@ public class SecurityConfig {
 
                 // Agent + Admin
                 .requestMatchers("/api/agent/**")
-                .hasAnyRole("AGENT", "ADMIN")
+                .hasAnyRole(
+                    "AGENT",
+                    "ADMIN"
+                )
 
                 // Customer + Agent + Admin
                 .requestMatchers("/api/customer/**")
@@ -77,18 +85,47 @@ public class SecurityConfig {
                     "AGENT",
                     "ADMIN"
                 )
-                .requestMatchers(HttpMethod.GET, "/api/properties/**")
-                .hasAnyRole("CUSTOMER", "AGENT", "ADMIN")
 
-            .requestMatchers(HttpMethod.POST, "/api/properties/**")
-                .hasAnyRole("AGENT", "ADMIN")
+                // GET properties
+                .requestMatchers(
+                    HttpMethod.GET,
+                    "/api/properties/**"
+                )
+                .hasAnyRole(
+                    "CUSTOMER",
+                    "AGENT",
+                    "ADMIN"
+                )
 
-            .requestMatchers(HttpMethod.PUT, "/api/properties/**")
-                .hasAnyRole("AGENT", "ADMIN")
+                // POST properties
+                .requestMatchers(
+                    HttpMethod.POST,
+                    "/api/properties/**"
+                )
+                .hasAnyRole(
+                    "AGENT",
+                    "ADMIN"
+                )
 
-            .requestMatchers(HttpMethod.DELETE, "/api/properties/**")
-                .hasAnyRole("AGENT", "ADMIN")
-                
+                // PUT properties
+                .requestMatchers(
+                    HttpMethod.PUT,
+                    "/api/properties/**"
+                )
+                .hasAnyRole(
+                    "AGENT",
+                    "ADMIN"
+                )
+
+                // DELETE properties
+                .requestMatchers(
+                    HttpMethod.DELETE,
+                    "/api/properties/**"
+                )
+                .hasAnyRole(
+                    "AGENT",
+                    "ADMIN"
+                )
 
                 // Everything else requires authentication
                 .anyRequest()
@@ -98,16 +135,22 @@ public class SecurityConfig {
             // 401 and 403 handling
             .exceptionHandling(exception -> exception
 
-                // Not authenticated → 401
+                // Not authenticated -> 401
                 .authenticationEntryPoint(
                     customAuthenticationEntryPoint
                 )
 
-                // Authenticated but insufficient role → 403
+                // Authenticated but insufficient permission -> 403
                 .accessDeniedHandler(
                     customAccessDeniedHandler
                 )
             )
+
+            // Google OAuth2 login
+            .oauth2Login(oauth2 -> oauth2
+            	    .loginPage("/oauth2/authorization/google")
+            	    .successHandler(googleOAuth2SuccessHandler)
+            	)
 
             // JWT filter
             .addFilterBefore(

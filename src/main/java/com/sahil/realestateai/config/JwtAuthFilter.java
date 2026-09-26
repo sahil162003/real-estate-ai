@@ -39,7 +39,9 @@ public class JwtAuthFilter extends OncePerRequestFilter {
          * These endpoints do NOT require a JWT.
          */
         if (path.equals("/api/users/login")
-                || path.equals("/api/users/register")) {
+                || path.equals("/api/users/register")
+                || path.startsWith("/oauth2/")
+                || path.startsWith("/login/oauth2/")) {
 
             filterChain.doFilter(request, response);
             return;
