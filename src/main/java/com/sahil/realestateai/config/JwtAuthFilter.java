@@ -1,4 +1,3 @@
-
 package com.sahil.realestateai.config;
 
 import java.io.IOException;
@@ -36,7 +35,10 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         /*
          * Public authentication endpoints
          *
-         * These endpoints do NOT require a JWT.
+         * These endpoints do not require JWT.
+         *
+         * OAuth2 endpoints are also skipped because
+         * Spring Security handles Google authentication.
          */
         if (path.equals("/api/users/login")
                 || path.equals("/api/users/register")
@@ -47,6 +49,9 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             return;
         }
 
+        /*
+         * Get Authorization header
+         */
         String authHeader = request.getHeader("Authorization");
 
         /*
@@ -63,8 +68,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         }
 
         /*
-         * Authorization header exists,
-         * but it is not using Bearer authentication.
+         * Authorization header must use Bearer authentication
          */
         if (!authHeader.startsWith("Bearer ")) {
 
@@ -97,48 +101,72 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         try {
 
             /*
-             * Extract username/email from JWT
+             * Extract email from JWT
              */
             String username =
                     jwtService.extractUsername(jwt);
 
-            /*
-             * Authenticate only if SecurityContext
-             * doesn't already contain authentication.
-             */
-            if (username != null
-                    && SecurityContextHolder
-                            .getContext()
-                            .getAuthentication() == null) {
+            System.out.println("========== JWT DEBUG ==========");
+            System.out.println("JWT EMAIL = " + username);
+            System.out.println("REQUEST = " + request.getRequestURI());
 
-                UserDetails userDetails =
-                        userDetailsService
-                                .loadUserByUsername(username);
+            /*
+             * Load user from database
+             */
+            UserDetails userDetails =
+                    userDetailsService
+                            .loadUserByUsername(username);
+
+            System.out.println(
+                    "LOADED USER = "
+                    + userDetails.getUsername()
+            );
+
+            System.out.println(
+                    "AUTHORITIES = "
+                    + userDetails.getAuthorities()
+            );
+
+            /*
+             * Validate JWT
+             */
+            if (jwtService.validateToken(
+                    jwt,
+                    userDetails)) {
 
                 /*
-                 * Validate JWT against user details
+                 * Create authentication using
+                 * the user represented by this JWT.
+                 *
+                 * This intentionally sets the JWT user
+                 * into SecurityContext.
                  */
-                if (jwtService.validateToken(
-                        jwt,
-                        userDetails)) {
+                UsernamePasswordAuthenticationToken authentication =
+                        new UsernamePasswordAuthenticationToken(
+                                userDetails,
+                                null,
+                                userDetails.getAuthorities()
+                        );
 
-                    UsernamePasswordAuthenticationToken authentication =
-                            new UsernamePasswordAuthenticationToken(
-                                    userDetails,
-                                    null,
-                                    userDetails.getAuthorities()
-                            );
+                authentication.setDetails(
+                        new WebAuthenticationDetailsSource()
+                                .buildDetails(request)
+                );
 
-                    authentication.setDetails(
-                            new WebAuthenticationDetailsSource()
-                                    .buildDetails(request)
-                    );
+                SecurityContextHolder
+                        .getContext()
+                        .setAuthentication(authentication);
 
-                    SecurityContextHolder
-                            .getContext()
-                            .setAuthentication(authentication);
-                }
+                System.out.println(
+                        "SECURITY CONTEXT USER = "
+                        + SecurityContextHolder
+                                .getContext()
+                                .getAuthentication()
+                                .getName()
+                );
             }
+
+            System.out.println("===============================");
 
         } catch (ExpiredJwtException e) {
 
@@ -178,12 +206,15 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         );
 
         response.setContentType("application/json");
+        response.setCharacterEncoding("UTF-8");
 
         response.getWriter().write(
                 "{"
                 + "\"status\":401,"
                 + "\"error\":\"Unauthorized\","
-                + "\"message\":\"" + message + "\""
+                + "\"message\":\""
+                + message
+                + "\""
                 + "}"
         );
     }

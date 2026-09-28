@@ -42,15 +42,33 @@ public class UserService {
 		return userMapper.toResponse(saveduser);
 	}
 	public  String loginUser(@Valid LoginDto loginDto) {
-		
-		User user = userRepository.findByEmail(loginDto.getEmail())
-		        .orElseThrow(() -> new InvalidCredentials("Invalid email or passwod"));	
-		
-		if(!passwordEncoder.matches(loginDto.getPassword(), user.getPassword())) {
-			throw new InvalidCredentials("Invalid email or password");
-		}
-		
-		return JwtService.generateToken(user.getEmail(),user.getRole().name()); 
+		System.out.println("========== LOGIN START ==========");
+	    System.out.println("LOGIN DTO EMAIL = " + loginDto.getEmail());
+
+	    User user = userRepository.findByEmail(loginDto.getEmail())
+	            .orElseThrow(() ->
+	                    new InvalidCredentials("Invalid email or password"));
+
+	    System.out.println("DATABASE USER ID = " + user.getId());
+	    System.out.println("DATABASE USER EMAIL = " + user.getEmail());
+	    System.out.println("DATABASE USER ROLE = " + user.getRole());
+
+	    if (!passwordEncoder.matches(
+	            loginDto.getPassword(),
+	            user.getPassword())) {
+
+	        throw new InvalidCredentials("Invalid email or password");
+	    }
+
+	    String token = JwtService.generateToken(
+	            user.getEmail(),
+	            user.getRole().name()
+	    );
+
+	    System.out.println("TOKEN GENERATED FOR = " + user.getEmail());
+	    System.out.println("========== LOGIN END ==========");
+
+	    return token;
 	}
 
 

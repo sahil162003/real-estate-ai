@@ -28,7 +28,7 @@ public class UserController {
 	}
 	
 	
-	@GetMapping("/login")
+	@PostMapping("/login")
 	public String test(@Valid @RequestBody LoginDto loginDto) {
 		
 		return userService.loginUser(loginDto);
