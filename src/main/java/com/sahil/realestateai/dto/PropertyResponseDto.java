@@ -2,6 +2,7 @@ package com.sahil.realestateai.dto;
 
 import java.time.LocalDateTime;
 
+import com.sahil.realestateai.entity.PropertyStatus;
 import com.sahil.realestateai.entity.PropertyType;
 
 import lombok.Data;
@@ -28,5 +29,7 @@ private String description;
 	private Double area;
 	
 	private PropertyType propertyType;
+	
+	private PropertyStatus status;
 
 }

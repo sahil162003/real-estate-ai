@@ -12,6 +12,7 @@ import com.sahil.realestateai.dto.PropertyPageResponseDto;
 import com.sahil.realestateai.dto.PropertyRequestDto;
 import com.sahil.realestateai.dto.PropertyResponseDto;
 import com.sahil.realestateai.entity.Property;
+import com.sahil.realestateai.entity.PropertyStatus;
 import com.sahil.realestateai.entity.Role;
 import com.sahil.realestateai.entity.User;
 import com.sahil.realestateai.exception.PropertyAccessDeniedException;
@@ -49,6 +50,7 @@ public class PropertyService {
 		Property property3=propertyRepository.save(property2);
 		return propertyMapper.toResponse(property3);
 	}
+	
 	
 	public  List<PropertyResponseDto> getAllProperties() {
 		
@@ -135,5 +137,35 @@ public class PropertyService {
 		            propertyPage.getTotalPages(),
 		            propertyPage.isLast()
 		    );
+	}
+
+	public PropertyResponseDto updatePropertyStatus(Long propertyId, PropertyStatus status) {
+		
+		Property property = propertyRepository.findById(propertyId).orElseThrow(()-> new PropertyNotFoundException("property not found"));
+		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+		String email = authentication.getName();
+		
+		User user = userRepository.findByEmail(email).orElseThrow(() -> new PropertyNotFoundException("user not found"));
+		
+		if (user.getRole() != Role.ADMIN && !user.getId().equals(property.getOwner().getId())) {
+			throw new PropertyAccessDeniedException("You are not authorized to update the status of this property");
+		}
+		property.setStatus(status);
+		Property propertyt=propertyRepository.save(property);
+		return propertyMapper.toResponse(propertyt);
+	}
+
+	public List<PropertyResponseDto> getMyProperties() {
+		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+		String name = authentication.getName();
+		User user = userRepository.findByEmail(name)
+	            .orElseThrow(() ->
+	                    new RuntimeException("User not found"));	
+		List<Property> properties =
+	            propertyRepository.findByOwner(user);
+		
+		return properties.stream()
+	            .map(propertyMapper::toResponse)
+	            .toList();
 	}
 }

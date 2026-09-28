@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -16,6 +17,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.sahil.realestateai.dto.PropertyRequestDto;
 import com.sahil.realestateai.dto.PropertyResponseDto;
+import com.sahil.realestateai.entity.PropertyStatus;
 import com.sahil.realestateai.service.PropertyImageService;
 import com.sahil.realestateai.service.PropertyService;
 
@@ -79,4 +81,8 @@ public String deleteImage(@PathVariable Long imageId) {
     return propertyImageService.deleteImage(imageId);
 }
 	
+@PatchMapping("/updateStatus/{propertyId}")
+public PropertyResponseDto updatePropertyStatus(@PathVariable Long propertyId, @RequestParam PropertyStatus status) {
+	return propertyService.updatePropertyStatus(propertyId, status);
+}
 }

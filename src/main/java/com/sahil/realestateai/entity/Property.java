@@ -53,6 +53,10 @@ public class Property {
 	
 	@Enumerated(EnumType.STRING)
 	@Column(nullable = false)
+	private PropertyStatus status = PropertyStatus.AVAILABLE;
+	
+	@Enumerated(EnumType.STRING)
+	@Column(nullable = false)
 	private PropertyType propertyType;
 	
 	@CreatedDate
