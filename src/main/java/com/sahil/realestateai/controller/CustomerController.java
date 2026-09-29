@@ -15,10 +15,12 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.sahil.realestateai.dto.AgentApplicationRequestDto;
 import com.sahil.realestateai.dto.AgentApplicationResponseDto;
+import com.sahil.realestateai.dto.InquiryResponseDto;
 import com.sahil.realestateai.dto.PropertyPageResponseDto;
 import com.sahil.realestateai.dto.PropertyResponseDto;
 import com.sahil.realestateai.service.AgentApplicationService;
 import com.sahil.realestateai.service.FavoriteService;
+import com.sahil.realestateai.service.InquiryService;
 import com.sahil.realestateai.service.PropertyImageService;
 import com.sahil.realestateai.service.PropertyService;
 
@@ -29,10 +31,12 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class CustomerController {
 	
+	private final InquiryService inquiryService;
 	private final PropertyService propertyService;
 	private final FavoriteService favoriteService;
 	private final PropertyImageService propertyImageService;
 	private final AgentApplicationService agentApplicationService;
+	
 	@GetMapping("/test")
 	public String test() {
 		return "Customer API is working fine";
@@ -77,5 +81,22 @@ public class CustomerController {
     	System.out.println("JWT EMAIL = " + email);
 		return agentApplicationService.applyForAgent(email,reason);
 	}
-}
+    
+    @PostMapping("/PropertyInquiry/{propertyId}")
+    public InquiryResponseDto PropertyInquiry(@PathVariable Long propertyId,@RequestParam String connect) {
+    	
+    	return inquiryService.propertyInquiry(propertyId,connect);
+    }
 
+    @GetMapping("/inquiries")
+    public List<InquiryResponseDto> getInquiries() {
+    	return inquiryService.getInquiries();
+    }
+    
+    @GetMapping("/inquiry/{inquiryId}")
+    public InquiryResponseDto getInquiry(@PathVariable Long inquiryId) {
+    	return inquiryService.getInquiry(inquiryId);
+    }
+
+	
+}
