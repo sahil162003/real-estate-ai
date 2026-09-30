@@ -11,6 +11,7 @@ import com.sahil.realestateai.dto.InquiryResponseDto;
 import com.sahil.realestateai.entity.InquiryStatus;
 import com.sahil.realestateai.entity.Property;
 import com.sahil.realestateai.entity.PropertyInquiry;
+import com.sahil.realestateai.entity.PropertyStatus;
 import com.sahil.realestateai.entity.User;
 import com.sahil.realestateai.repository.InquiryRepository;
 import com.sahil.realestateai.repository.PropertyRepository;
@@ -36,6 +37,14 @@ public class InquiryService {
 		
 		Property property = propertyReposittory.findById(propertyId).orElseThrow(() ->new RuntimeException("Propert not found"));
 		
+		if (property.getStatus() != PropertyStatus.AVAILABLE) {
+		    throw new RuntimeException(
+		            "Inquiry cannot be created for a "
+		            + property.getStatus()
+		            + " property"
+		    );
+		}
+		
 		PropertyInquiry propertyInquiry = new PropertyInquiry();
 		
 		propertyInquiry.setProperty(property);
@@ -44,7 +53,7 @@ public class InquiryService {
 		propertyInquiry.setStatus(InquiryStatus.PENDING);
 		
 		PropertyInquiry save = inquiryRepository.save(propertyInquiry);
-		return convertToResponse(propertyInquiry);
+		return convertToResponse(save);
 	}
 	 private InquiryResponseDto convertToResponse(
 	            PropertyInquiry inquiry) {
@@ -107,9 +116,27 @@ public class InquiryService {
 	 }
 	 
 	 public InquiryResponseDto getInquiry(Long inquiryId) {
-		 PropertyInquiry propertyInquiry = inquiryRepository.findById(inquiryId).orElseThrow(()->new RuntimeException("inquiry not found"));
-		 
-		return convertToResponse(propertyInquiry);
+		  Authentication auth =
+		            SecurityContextHolder.getContext().getAuthentication();
+
+		    String email = auth.getName();
+
+		    User user = userRepository.findByEmail(email)
+		            .orElseThrow(() ->
+		                    new RuntimeException("User not found"));
+
+		    PropertyInquiry inquiry =
+		            inquiryRepository.findById(inquiryId)
+		                    .orElseThrow(() ->
+		                            new RuntimeException("Inquiry not found"));
+
+		    if (!inquiry.getCustomer().getId().equals(user.getId())) {
+
+		        throw new RuntimeException(
+		                "You are not authorized to view this inquiry");
+		    }
+
+		    return convertToResponse(inquiry);
 	 }
 	 
 	 public List<InquiryResponseDto> getAgentInquiries() {
@@ -163,6 +190,12 @@ public class InquiryService {
 		        throw new RuntimeException(
 		                "You are not authorized to update this inquiry");
 		    }
+		    
+
+		    validateStatusTransition(
+		            inquiry.getStatus(),
+		            newStatus
+		    );
 
 		    // Update status
 		    inquiry.setStatus(newStatus);
@@ -215,6 +248,11 @@ public class InquiryService {
 		            inquiryRepository.findById(inquiryId)
 		                    .orElseThrow(() ->
 		                            new RuntimeException("Inquiry not found"));
+		    
+		    validateStatusTransition(
+		            inquiry.getStatus(),
+		            newStatus
+		    );
 
 		    inquiry.setStatus(newStatus);
 
@@ -234,6 +272,25 @@ public class InquiryService {
 		            inquiryRepository.save(inquiry);
 
 		    return convertToResponse(saved);
+		}
+	 
+	 private void validateStatusTransition(
+		        InquiryStatus current,
+		        InquiryStatus next) {
+
+		    if (current == InquiryStatus.PENDING
+		            && next == InquiryStatus.CONTACTED) {
+		        return;
+		    }
+
+		    if (current == InquiryStatus.CONTACTED
+		            && next == InquiryStatus.CLOSED) {
+		        return;
+		    }
+
+		    throw new RuntimeException(
+		            "Invalid status transition: "
+		            + current + " → " + next);
 		}
 
 }
