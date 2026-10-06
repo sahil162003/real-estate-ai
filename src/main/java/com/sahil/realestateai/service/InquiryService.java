@@ -13,6 +13,12 @@ import com.sahil.realestateai.entity.Property;
 import com.sahil.realestateai.entity.PropertyInquiry;
 import com.sahil.realestateai.entity.PropertyStatus;
 import com.sahil.realestateai.entity.User;
+import com.sahil.realestateai.exception.InquiryNotFoundException;
+import com.sahil.realestateai.exception.InvalidInquiryStatusException;
+import com.sahil.realestateai.exception.PropertyInquiryNotAllowedException;
+import com.sahil.realestateai.exception.PropertyNotFoundException;
+import com.sahil.realestateai.exception.UnauthorizedInquiryException;
+import com.sahil.realestateai.exception.UserNotFoundException;
 import com.sahil.realestateai.repository.InquiryRepository;
 import com.sahil.realestateai.repository.PropertyRepository;
 import com.sahil.realestateai.repository.UserRepository;
@@ -33,12 +39,12 @@ public class InquiryService {
 		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 		String name = auth.getName();
 		
-		User user = userRepository.findByEmail(name).orElseThrow(() ->new RuntimeException("user not found"));
+		User user = userRepository.findByEmail(name).orElseThrow(() ->new UserNotFoundException("user not found"));
 		
-		Property property = propertyReposittory.findById(propertyId).orElseThrow(() ->new RuntimeException("Propert not found"));
+		Property property = propertyReposittory.findById(propertyId).orElseThrow(() ->new PropertyNotFoundException("Propert not found"));
 		
 		if (property.getStatus() != PropertyStatus.AVAILABLE) {
-		    throw new RuntimeException(
+		    throw new PropertyInquiryNotAllowedException(
 		            "Inquiry cannot be created for a "
 		            + property.getStatus()
 		            + " property"
@@ -109,7 +115,7 @@ public class InquiryService {
 		 
 		 Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 		           String name = auth.getName();
-		           User byEmail = userRepository.findByEmail(name).orElseThrow(()->new RuntimeException("user not found"));
+		           User byEmail = userRepository.findByEmail(name).orElseThrow(()->new UserNotFoundException("user not found"));
 		 List<PropertyInquiry> inquiries = inquiryRepository.findByCustomer(byEmail);
 		 
 		return inquiries.stream().map(this::convertToResponse).toList();
@@ -123,16 +129,16 @@ public class InquiryService {
 
 		    User user = userRepository.findByEmail(email)
 		            .orElseThrow(() ->
-		                    new RuntimeException("User not found"));
+		                    new UserNotFoundException("User not found"));
 
 		    PropertyInquiry inquiry =
 		            inquiryRepository.findById(inquiryId)
 		                    .orElseThrow(() ->
-		                            new RuntimeException("Inquiry not found"));
+		                            new InquiryNotFoundException("Inquiry not found"));
 
 		    if (!inquiry.getCustomer().getId().equals(user.getId())) {
 
-		        throw new RuntimeException(
+		        throw new UnauthorizedInquiryException(
 		                "You are not authorized to view this inquiry");
 		    }
 
@@ -150,7 +156,7 @@ public class InquiryService {
 
 		    User agent = userRepository.findByEmail(email)
 		            .orElseThrow(() ->
-		                    new RuntimeException("User not found"));
+		                    new UserNotFoundException("User not found"));
 
 		    List<PropertyInquiry> inquiries =
 		            inquiryRepository.findByPropertyOwner(agent);
@@ -173,12 +179,12 @@ public class InquiryService {
 
 		    User agent = userRepository.findByEmail(email)
 		            .orElseThrow(() ->
-		                    new RuntimeException("User not found"));
+		                    new UserNotFoundException("User not found"));
 
 		    PropertyInquiry inquiry =
 		            inquiryRepository.findById(inquiryId)
 		                    .orElseThrow(() ->
-		                            new RuntimeException("Inquiry not found"));
+		                            new InquiryNotFoundException("Inquiry not found"));
 
 		    // Check that this inquiry belongs to
 		    // a property owned by the logged-in agent
@@ -187,7 +193,7 @@ public class InquiryService {
 		            .getId()
 		            .equals(agent.getId())) {
 
-		        throw new RuntimeException(
+		        throw new UnauthorizedInquiryException(
 		                "You are not authorized to update this inquiry");
 		    }
 		    
@@ -235,7 +241,7 @@ public class InquiryService {
 		    PropertyInquiry inquiry =
 		            inquiryRepository.findById(inquiryId)
 		                    .orElseThrow(() ->
-		                            new RuntimeException("Inquiry not found"));
+		                            new InquiryNotFoundException("Inquiry not found"));
 
 		    return convertToResponse(inquiry);
 		}
@@ -247,7 +253,7 @@ public class InquiryService {
 		    PropertyInquiry inquiry =
 		            inquiryRepository.findById(inquiryId)
 		                    .orElseThrow(() ->
-		                            new RuntimeException("Inquiry not found"));
+		                            new InquiryNotFoundException("Inquiry not found"));
 		    
 		    validateStatusTransition(
 		            inquiry.getStatus(),
@@ -288,7 +294,7 @@ public class InquiryService {
 		        return;
 		    }
 
-		    throw new RuntimeException(
+		    throw new InvalidInquiryStatusException(
 		            "Invalid status transition: "
 		            + current + " → " + next);
 		}
