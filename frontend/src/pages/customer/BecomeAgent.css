@@ -1,0 +1,215 @@
+
+.become-agent-page {
+  min-height: 100vh;
+  padding: 32px;
+  background: #f3f6fb;
+  color: #172033;
+}
+
+.become-agent-header {
+  max-width: 1100px;
+  margin: 0 auto 30px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 24px;
+}
+
+.become-agent-brand {
+  display: inline-block;
+  margin-bottom: 16px;
+  color: #2457ff;
+  font-size: 20px;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.become-agent-header h1 {
+  margin: 0 0 8px;
+  font-size: 30px;
+}
+
+.become-agent-header p {
+  margin: 0;
+  color: #64748b;
+  line-height: 1.6;
+}
+
+.become-agent-nav {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 18px;
+}
+
+.become-agent-nav a {
+  color: #334155;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.become-agent-nav a:hover {
+  color: #2457ff;
+}
+
+.become-agent-card {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 32px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 18px;
+  box-shadow: 0 8px 30px rgb(15 23 42 / 5%);
+}
+
+.become-agent-card h2 {
+  margin: 0 0 22px;
+  font-size: 24px;
+}
+
+.become-agent-card form label {
+  display: block;
+  margin-bottom: 10px;
+  color: #334155;
+  font-weight: 600;
+}
+
+.become-agent-card textarea {
+  display: block;
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 150px;
+  padding: 14px;
+  resize: vertical;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  outline: none;
+  font: inherit;
+  line-height: 1.6;
+}
+
+.become-agent-card textarea:focus {
+  border-color: #2457ff;
+  box-shadow: 0 0 0 3px rgb(36 87 255 / 10%);
+}
+
+.become-agent-character-count {
+  margin: 8px 0 20px;
+  color: #64748b;
+  font-size: 12px;
+  text-align: right;
+}
+
+.become-agent-card form button {
+  padding: 13px 22px;
+  background: #2457ff;
+  border: none;
+  border-radius: 9px;
+  color: #ffffff;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.become-agent-card form button:hover:not(:disabled) {
+  background: #1946d8;
+}
+
+.become-agent-card form button:disabled {
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+
+.become-agent-error,
+.become-agent-success,
+.become-agent-rejected {
+  margin-bottom: 20px;
+  padding: 14px 16px;
+  border-radius: 10px;
+  line-height: 1.6;
+}
+
+.become-agent-error {
+  background: #fff1f2;
+  border: 1px solid #fecdd3;
+  color: #9f1239;
+}
+
+.become-agent-success {
+  background: #ecfdf5;
+  border: 1px solid #a7f3d0;
+  color: #065f46;
+}
+
+.become-agent-rejected {
+  background: #fff7ed;
+  border: 1px solid #fed7aa;
+  color: #9a3412;
+}
+
+.become-agent-status > p {
+  margin: 16px 0;
+  color: #475569;
+  line-height: 1.7;
+  overflow-wrap: anywhere;
+}
+
+.agent-status-badge {
+  display: inline-block;
+  padding: 5px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.agent-status-badge.pending {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.agent-status-badge.approved {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.agent-status-badge.rejected {
+  background: #ffe4e6;
+  color: #9f1239;
+}
+
+.become-agent-note {
+  margin-top: 20px;
+  padding: 14px;
+  background: #f1f5f9;
+  border-radius: 10px;
+  line-height: 1.7;
+}
+
+@media (max-width: 700px) {
+  .become-agent-page {
+    padding: 20px 14px;
+  }
+
+  .become-agent-header {
+    align-items: flex-start;
+  }
+
+  .become-agent-header h1 {
+    font-size: 25px;
+  }
+
+  .become-agent-nav {
+    gap: 12px;
+  }
+
+  .become-agent-card {
+    padding: 22px 18px;
+  }
+
+  .become-agent-card h2 {
+    font-size: 21px;
+  }
+}

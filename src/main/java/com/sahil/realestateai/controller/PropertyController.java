@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.sahil.realestateai.dto.PropertyPageResponseDto;
 import com.sahil.realestateai.dto.PropertyRequestDto;
 import com.sahil.realestateai.dto.PropertyResponseDto;
 import com.sahil.realestateai.entity.PropertyStatus;
@@ -48,6 +49,8 @@ public List<PropertyResponseDto> getAllProperties(){
 	return propertyService.getAllProperties();
 	
 }
+
+
 
 @GetMapping("/getProperties/{id}")
 public PropertyResponseDto getProperty(@PathVariable Long id) {

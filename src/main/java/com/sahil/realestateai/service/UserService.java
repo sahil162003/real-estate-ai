@@ -1,6 +1,8 @@
 package com.sahil.realestateai.service;
 
 import java.util.Optional;
+import com.sahil.realestateai.dto.UserProfileUpdateDto;
+import jakarta.persistence.EntityNotFoundException;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -69,6 +71,30 @@ public class UserService {
 	    System.out.println("========== LOGIN END ==========");
 
 	    return token;
+	}
+	public UserResponseDto getProfile(String email) {
+
+	    User user = userRepository.findByEmail(email)
+	            .orElseThrow(() ->
+	                    new EntityNotFoundException("User not found"));
+
+	    return userMapper.toResponse(user);
+	}
+	
+	public UserResponseDto updateProfile(
+	        String email,
+	        UserProfileUpdateDto profileDto) {
+
+	    User user = userRepository.findByEmail(email)
+	            .orElseThrow(() ->
+	                    new EntityNotFoundException("User not found"));
+
+	    user.setPhoneNumber(profileDto.getPhoneNumber());
+	    user.setAddress(profileDto.getAddress());
+
+	    User updatedUser = userRepository.save(user);
+
+	    return userMapper.toResponse(updatedUser);
 	}
 
 

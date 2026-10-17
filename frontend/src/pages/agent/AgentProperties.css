@@ -1,0 +1,352 @@
+
+/* Main page */
+.agent-properties-page {
+  min-height: 100vh;
+  padding: 32px;
+  background: #f5f7fb;
+  color: #1f2937;
+  font-family: Arial, sans-serif;
+  box-sizing: border-box;
+}
+
+/* Header */
+.agent-properties-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
+  margin-bottom: 28px;
+}
+
+.agent-properties-header h1 {
+  margin: 0 0 8px;
+  color: #111827;
+  font-size: 30px;
+  font-weight: 700;
+}
+
+.agent-properties-header p {
+  margin: 0;
+  color: #6b7280;
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+.agent-properties-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+/* Header buttons */
+.agent-properties-back,
+.agent-properties-add {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  padding: 11px 18px;
+  border-radius: 8px;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 600;
+  transition: background 0.2s ease;
+}
+
+.agent-properties-back {
+  color: #374151;
+  background: #ffffff;
+  border: 1px solid #d1d5db;
+}
+
+.agent-properties-back:hover {
+  background: #e5e7eb;
+}
+
+.agent-properties-add {
+  color: #ffffff;
+  background: #2563eb;
+  border: 1px solid #2563eb;
+}
+
+.agent-properties-add:hover {
+  background: #1d4ed8;
+}
+
+/* Summary card */
+.agent-properties-summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 260px));
+  gap: 20px;
+  margin-bottom: 28px;
+}
+
+.agent-properties-summary-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 22px;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgb(15 23 42 / 4%);
+}
+
+.agent-properties-summary-card span {
+  color: #6b7280;
+  font-size: 14px;
+}
+
+.agent-properties-summary-card strong {
+  color: #111827;
+  font-size: 30px;
+}
+
+/* Main content */
+.agent-properties-content {
+  padding: 24px;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgb(15 23 42 / 4%);
+}
+
+.agent-properties-message {
+  margin: 20px 0;
+  color: #6b7280;
+  text-align: center;
+}
+
+/* Error message */
+.agent-properties-error {
+  padding: 20px;
+  margin-bottom: 20px;
+  color: #991b1b;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  text-align: center;
+}
+
+.agent-properties-error p {
+  margin: 0 0 14px;
+}
+
+.agent-properties-error button {
+  padding: 9px 16px;
+  color: #ffffff;
+  background: #dc2626;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.agent-properties-error button:hover {
+  background: #b91c1c;
+}
+
+/* Empty state */
+.agent-properties-empty {
+  padding: 40px 20px;
+  text-align: center;
+}
+
+.agent-properties-empty h2 {
+  margin: 0 0 12px;
+  color: #111827;
+  font-size: 22px;
+}
+
+.agent-properties-empty p {
+  max-width: 520px;
+  margin: 0 auto 22px;
+  color: #6b7280;
+  line-height: 1.6;
+}
+
+/* Property table */
+.agent-properties-table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.agent-properties-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.agent-properties-table th,
+.agent-properties-table td {
+  padding: 16px 14px;
+  border-bottom: 1px solid #e5e7eb;
+  white-space: nowrap;
+}
+
+.agent-properties-table th {
+  color: #4b5563;
+  background: #f9fafb;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.agent-properties-table td {
+  color: #374151;
+  font-size: 14px;
+}
+
+.agent-properties-table tbody tr:hover {
+  background: #f9fafb;
+}
+
+.agent-properties-table td strong {
+  color: #111827;
+}
+
+/* Status selector */
+.agent-properties-status-select {
+  min-width: 125px;
+  padding: 8px 10px;
+  border: 1px solid #d1d5db;
+  border-radius: 7px;
+  background: #ffffff;
+  color: #374151;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.agent-properties-status-select:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgb(37 99 235 / 12%);
+}
+
+.agent-properties-status-select:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+.agent-properties-updating {
+  display: block;
+  margin-top: 5px;
+  color: #6b7280;
+  font-size: 11px;
+}
+
+/* View and Edit actions */
+.agent-properties-row-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.agent-properties-view,
+.agent-properties-edit {
+  display: inline-block;
+  padding: 7px 12px;
+  border-radius: 6px;
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 600;
+  transition: background 0.2s ease;
+}
+
+.agent-properties-view {
+  color: #2563eb;
+  background: #eff6ff;
+}
+
+.agent-properties-view:hover {
+  background: #dbeafe;
+}
+
+.agent-properties-edit {
+  color: #374151;
+  background: #f3f4f6;
+}
+
+.agent-properties-edit:hover {
+  background: #e5e7eb;
+}
+
+/* Tablet */
+@media (max-width: 768px) {
+  .agent-properties-page {
+    padding: 18px;
+  }
+
+  .agent-properties-header h1 {
+    font-size: 25px;
+  }
+
+  .agent-properties-content {
+    padding: 14px;
+  }
+
+  .agent-properties-table th,
+  .agent-properties-table td {
+    padding: 12px 10px;
+  }
+}
+
+/* Mobile */
+@media (max-width: 480px) {
+  .agent-properties-page {
+    padding: 12px;
+  }
+
+  .agent-properties-actions {
+    width: 100%;
+  }
+
+  .agent-properties-actions a {
+    flex: 1;
+  }
+
+  .agent-properties-content {
+    padding: 10px;
+  }
+
+  .agent-properties-row-actions {
+    flex-wrap: wrap;
+  }
+
+  .agent-properties-status-select {
+    min-width: 110px;
+  }
+}
+/* Delete Property Button */
+.agent-properties-delete {
+  padding: 8px 12px;
+  border: 1px solid #dc2626;
+  border-radius: 6px;
+  background-color: #dc2626;
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.agent-properties-delete:hover:not(:disabled) {
+  background-color: #b91c1c;
+  border-color: #b91c1c;
+}
+
+.agent-properties-delete:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.agent-properties-row-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}

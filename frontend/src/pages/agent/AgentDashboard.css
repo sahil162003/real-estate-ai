@@ -1,0 +1,255 @@
+
+.agent-dashboard {
+  min-height: 100vh;
+  padding: 32px;
+  background: #f4f7fc;
+  color: #172033;
+}
+
+.agent-dashboard-header {
+  max-width: 1180px;
+  margin: 0 auto 32px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 24px;
+}
+
+.agent-dashboard-brand {
+  display: inline-block;
+  margin-bottom: 20px;
+  color: #2457ff;
+  font-size: 21px;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.agent-dashboard-eyebrow {
+  margin: 0 0 8px;
+  color: #2457ff;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+}
+
+.agent-dashboard-header h1 {
+  margin: 0 0 10px;
+  font-size: 32px;
+  line-height: 1.3;
+  overflow-wrap: anywhere;
+}
+
+.agent-dashboard-subtitle {
+  margin: 0;
+  color: #64748b;
+  line-height: 1.7;
+}
+
+.agent-dashboard-nav {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+.agent-dashboard-nav a {
+  color: #475569;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.agent-dashboard-nav a:hover,
+.agent-dashboard-nav a.active {
+  color: #2457ff;
+}
+
+.agent-dashboard-welcome {
+  max-width: 1180px;
+  margin: 0 auto 36px;
+  padding: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  background: linear-gradient(120deg, #e8efff, #f2f6ff);
+  border: 1px solid #dce6ff;
+  border-radius: 20px;
+}
+
+.agent-dashboard-welcome > div:first-child {
+  max-width: 700px;
+}
+
+.agent-dashboard-label {
+  display: inline-block;
+  margin-bottom: 12px;
+  color: #2457ff;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1px;
+}
+
+.agent-dashboard-welcome h2 {
+  margin: 0 0 12px;
+  font-size: 28px;
+  line-height: 1.35;
+}
+
+.agent-dashboard-welcome p {
+  max-width: 620px;
+  margin: 0 0 24px;
+  color: #52627a;
+  line-height: 1.8;
+}
+
+.agent-dashboard-primary-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 13px 20px;
+  background: #2457ff;
+  border-radius: 9px;
+  color: #ffffff;
+  font-weight: 700;
+  text-decoration: none;
+  transition: background 0.2s ease;
+}
+
+.agent-dashboard-primary-button:hover {
+  background: #1946d8;
+}
+
+.agent-dashboard-house-icon {
+  flex-shrink: 0;
+  font-size: 76px;
+}
+
+.agent-dashboard-section {
+  max-width: 1180px;
+  margin: 0 auto;
+}
+
+.agent-dashboard-section-heading {
+  margin-bottom: 22px;
+}
+
+.agent-dashboard-section-heading h2 {
+  margin: 0 0 8px;
+  font-size: 23px;
+}
+
+.agent-dashboard-section-heading p {
+  margin: 0;
+  color: #64748b;
+  line-height: 1.6;
+}
+
+.agent-dashboard-actions {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 22px;
+}
+
+.agent-dashboard-action-card {
+  min-width: 0;
+  padding: 26px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  text-decoration: none;
+  color: inherit;
+  box-shadow: 0 5px 18px rgb(15 23 42 / 3%);
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.agent-dashboard-action-card:hover {
+  transform: translateY(-3px);
+  border-color: #bfd0ff;
+  box-shadow: 0 10px 24px rgb(15 23 42 / 7%);
+}
+
+.agent-dashboard-action-icon {
+  display: flex;
+  width: 48px;
+  height: 48px;
+  margin-bottom: 20px;
+  align-items: center;
+  justify-content: center;
+  background: #edf2ff;
+  border-radius: 12px;
+  color: #2457ff;
+  font-size: 28px;
+  font-weight: 700;
+}
+
+.agent-dashboard-action-card h3 {
+  margin: 0 0 10px;
+  font-size: 18px;
+}
+
+.agent-dashboard-action-card p {
+  min-height: 48px;
+  margin: 0 0 20px;
+  color: #64748b;
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+.agent-dashboard-action-link {
+  color: #2457ff;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+@media (max-width: 850px) {
+  .agent-dashboard-actions {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .agent-dashboard-house-icon {
+    font-size: 58px;
+  }
+}
+
+@media (max-width: 600px) {
+  .agent-dashboard {
+    padding: 22px 14px;
+  }
+
+  .agent-dashboard-header h1 {
+    font-size: 26px;
+  }
+
+  .agent-dashboard-nav {
+    gap: 14px;
+  }
+
+  .agent-dashboard-welcome {
+    padding: 24px 20px;
+  }
+
+  .agent-dashboard-welcome h2 {
+    font-size: 23px;
+  }
+
+  .agent-dashboard-house-icon {
+    display: none;
+  }
+
+  .agent-dashboard-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .agent-dashboard-action-card {
+    padding: 22px;
+  }
+
+  .agent-dashboard-action-card p {
+    min-height: auto;
+  }
+}

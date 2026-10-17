@@ -1,0 +1,281 @@
+
+.admin-applications-page {
+  min-height: 100vh;
+  padding: 32px;
+  background: #f3f6fb;
+  color: #172033;
+}
+
+.admin-applications-header {
+  max-width: 1100px;
+  margin: 0 auto 30px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.admin-applications-eyebrow {
+  margin: 0 0 8px;
+  color: #2457ff;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+}
+
+.admin-applications-header h1 {
+  margin: 0 0 8px;
+  font-size: 30px;
+}
+
+.admin-applications-header > div > p:last-child {
+  margin: 0;
+  color: #64748b;
+  line-height: 1.6;
+}
+
+.admin-refresh-button {
+  padding: 11px 18px;
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 9px;
+  color: #334155;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.admin-refresh-button:hover:not(:disabled) {
+  background: #f8fafc;
+}
+
+.admin-refresh-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.admin-applications-content {
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.admin-applications-summary {
+  margin-bottom: 24px;
+}
+
+.admin-applications-summary > div {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 190px;
+  padding: 20px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+}
+
+.admin-applications-summary span {
+  color: #64748b;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.admin-applications-summary strong {
+  font-size: 30px;
+}
+
+.admin-applications-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 22px;
+}
+
+.admin-application-card {
+  min-width: 0;
+  padding: 24px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  box-shadow: 0 5px 20px rgb(15 23 42 / 4%);
+}
+
+.admin-application-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 14px;
+}
+
+.admin-application-id {
+  margin: 0 0 10px;
+  color: #2457ff;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1px;
+}
+
+.admin-application-top h2 {
+  margin: 0 0 6px;
+  font-size: 20px;
+  overflow-wrap: anywhere;
+}
+
+.admin-application-email {
+  margin: 0;
+  color: #64748b;
+  font-size: 13px;
+  overflow-wrap: anywhere;
+}
+
+.admin-application-status {
+  flex-shrink: 0;
+  padding: 6px 10px;
+  background: #fef3c7;
+  border-radius: 20px;
+  color: #92400e;
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.admin-application-reason {
+  margin: 24px 0;
+  padding: 18px;
+  background: #f8fafc;
+  border-radius: 10px;
+}
+
+.admin-application-reason h3 {
+  margin: 0 0 10px;
+  font-size: 14px;
+}
+
+.admin-application-reason p {
+  margin: 0;
+  color: #475569;
+  font-size: 14px;
+  line-height: 1.8;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+
+.admin-application-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  color: #64748b;
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+
+.admin-application-meta strong {
+  color: #334155;
+}
+
+.admin-application-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.admin-application-actions button {
+  flex: 1;
+  padding: 12px 16px;
+  border: none;
+  border-radius: 9px;
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+}
+
+.admin-application-actions button:hover:not(:disabled) {
+  opacity: 0.88;
+}
+
+.admin-application-actions button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.admin-approve-button {
+  background: #15803d;
+}
+
+.admin-reject-button {
+  background: #dc2626;
+}
+
+.admin-applications-empty {
+  padding: 50px 24px;
+  background: #ffffff;
+  border: 1px dashed #cbd5e1;
+  border-radius: 16px;
+  text-align: center;
+}
+
+.admin-applications-empty h2 {
+  margin: 0 0 10px;
+  font-size: 22px;
+}
+
+.admin-applications-empty p {
+  margin: 0;
+  color: #64748b;
+  line-height: 1.6;
+}
+
+.admin-applications-feedback {
+  padding: 30px;
+  color: #64748b;
+  text-align: center;
+}
+
+.admin-applications-error,
+.admin-applications-success {
+  margin-bottom: 20px;
+  padding: 15px 18px;
+  border-radius: 10px;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+
+.admin-applications-error {
+  background: #fff1f2;
+  border: 1px solid #fecdd3;
+  color: #9f1239;
+}
+
+.admin-applications-success {
+  background: #ecfdf5;
+  border: 1px solid #a7f3d0;
+  color: #065f46;
+}
+
+@media (max-width: 800px) {
+  .admin-applications-page {
+    padding: 22px 14px;
+  }
+
+  .admin-applications-header h1 {
+    font-size: 26px;
+  }
+
+  .admin-applications-list {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-application-card {
+    padding: 20px;
+  }
+}
+
+@media (max-width: 450px) {
+  .admin-application-top {
+    flex-direction: column;
+  }
+
+  .admin-application-actions {
+    flex-direction: column;
+  }
+}

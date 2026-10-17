@@ -67,39 +67,74 @@ public class PropertyService {
 			return propertyMapper.toResponse(p1) ;
 	}
 
-	public PropertyResponseDto updateProperty( Long id,PropertyRequestDto e) {
-		Property p=propertyRepository.findById(id).orElseThrow(()->new PropertyNotFoundException("no property found"));
-          Authentication auth=SecurityContextHolder.getContext().getAuthentication();
-           String email=  auth.getName();
-           User user=userRepository.findByEmail(email).orElseThrow(()-> new PropertyNotFoundException("user not found"));
-		   if(user.getRole()!=Role.ADMIN && !user.getId().equals(p.getOwner().getId())) {
-			   throw new PropertyAccessDeniedException("you are not authorized to update this property");
-		   }
-	
-	p.setTitle(e.getTitle());
-	p.setBedrooms(e.getBedrooms());
-	p.setLocation(e.getLocation());
-	p.setPrice(e.getPrice());
-	 propertyRepository.save(p);
-	
-		return propertyMapper.toResponse(p);
+	public PropertyResponseDto updateProperty(Long id, PropertyRequestDto e) {
+
+	    Property p = propertyRepository.findById(id)
+	            .orElseThrow(() ->
+	                    new PropertyNotFoundException("no property found"));
+
+	    Authentication auth = SecurityContextHolder
+	            .getContext()
+	            .getAuthentication();
+
+	    String email = auth.getName();
+
+	    User user = userRepository.findByEmail(email)
+	            .orElseThrow(() ->
+	                    new PropertyNotFoundException("user not found"));
+
+	    if (user.getRole() != Role.ADMIN
+	            && !user.getId().equals(p.getOwner().getId())) {
+
+	        throw new PropertyAccessDeniedException(
+	                "you are not authorized to update this property");
+	    }
+
+	    // Update all property fields
+	    p.setTitle(e.getTitle());
+	    p.setLocation(e.getLocation());
+	    p.setPrice(e.getPrice());
+	    p.setBedrooms(e.getBedrooms());
+	    p.setDescription(e.getDescription());
+	    p.setBathrooms(e.getBathrooms());
+	    p.setArea(e.getArea());
+	    p.setPropertyType(e.getPropertyType());
+
+	    Property updatedProperty = propertyRepository.save(p);
+
+	    return propertyMapper.toResponse(updatedProperty);
 	}
 
 	public String deleteById(Long id) {
-		Optional<Property> exist=propertyRepository.findById(id);
-		
-		if(exist.isEmpty())
-			throw new PropertyNotFoundException("Property does not exists");
-		
-		Property p=exist.get();
-		 Authentication auth=SecurityContextHolder.getContext().getAuthentication();
-         String email=  auth.getName();
-         User user=userRepository.findByEmail(email).orElseThrow(()-> new PropertyNotFoundException("user not found"));
-		   if(user.getRole()!=Role.ADMIN && !user.getId().equals(p.getOwner().getId())) {
-			   throw new PropertyAccessDeniedException("you are not authorized to delete this property");
-		   }
-       propertyRepository.deleteById(id);
-		return "deleted Successfully";
+
+	    Property p = propertyRepository.findById(id)
+	            .orElseThrow(() ->
+	                    new PropertyNotFoundException(
+	                            "Property does not exist"));
+
+	    Authentication auth = SecurityContextHolder
+	            .getContext()
+	            .getAuthentication();
+
+	    String email = auth.getName();
+
+	    User user = userRepository.findByEmail(email)
+	            .orElseThrow(() ->
+	                    new PropertyNotFoundException("User not found"));
+
+	    boolean isAdmin = user.getRole() == Role.ADMIN;
+
+	    boolean isOwner = p.getOwner() != null
+	            && user.getId().equals(p.getOwner().getId());
+
+	    if (!isAdmin && !isOwner) {
+	        throw new PropertyAccessDeniedException(
+	                "You are not authorized to delete this property");
+	    }
+
+	    propertyRepository.delete(p);
+
+	    return "Deleted successfully";
 	}
 
 	public PropertyPageResponseDto searchProperties(String location, Integer bedroom, Double minPrice, Double maxPrice,String sortBy, String sortOrder, int page) {

@@ -1,6 +1,7 @@
 package com.sahil.realestateai.config;
 
 import org.springframework.context.annotation.Bean;
+
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -12,6 +13,10 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 import com.sahil.realestateai.exception.CustomAccessDeniedHandler;
 import com.sahil.realestateai.exception.CustomAuthenticationEntryPoint;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import java.util.List;
 
 import lombok.RequiredArgsConstructor;
 
@@ -30,6 +35,32 @@ public class SecurityConfig {
     private final GoogleOAuth2SuccessHandler
     googleOAuth2SuccessHandler;
 
+    
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+
+        configuration.setAllowedOrigins(
+                List.of("http://localhost:5173")
+        );
+
+        configuration.setAllowedMethods(
+                List.of("GET", "POST","PATCH", "PUT", "DELETE", "OPTIONS")
+        );
+
+        configuration.setAllowedHeaders(
+                List.of("Authorization", "Content-Type", "Accept")
+        );
+
+        configuration.setAllowCredentials(true);
+
+        UrlBasedCorsConfigurationSource source =
+                new UrlBasedCorsConfigurationSource();
+
+        source.registerCorsConfiguration("/**", configuration);
+
+        return source;
+    }
   
 
     @Bean
@@ -39,7 +70,8 @@ public class SecurityConfig {
         http
 
             // Disable CSRF because this is a REST API
-            .csrf(csrf -> csrf.disable())
+        .cors(cors -> {})
+        .csrf(csrf -> csrf.disable())
 
             // OAuth2 login needs a session during the login process.
             // JWT authentication remains used for your APIs.

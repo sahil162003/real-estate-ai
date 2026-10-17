@@ -1,12 +1,15 @@
 package com.sahil.realestateai.controller;
 
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.sahil.realestateai.dto.LoginDto;
+import com.sahil.realestateai.dto.UserProfileUpdateDto;
 import com.sahil.realestateai.dto.UserRegisterDto;
 import com.sahil.realestateai.dto.UserResponseDto;
 import com.sahil.realestateai.service.UserService;
@@ -39,6 +42,25 @@ public class UserController {
 		return "token is valid";
 	}
 	
+	@GetMapping("/me")
+	public UserResponseDto getMyProfile(
+	        Authentication authentication) {
+
+	    return userService.getProfile(
+	            authentication.getName()
+	    );
+	}
+
+	@PutMapping("/me")
+	public UserResponseDto updateMyProfile(
+	        Authentication authentication,
+	        @Valid @RequestBody UserProfileUpdateDto profileDto) {
+
+	    return userService.updateProfile(
+	            authentication.getName(),
+	            profileDto
+	    );
+	}
 	
 
 }

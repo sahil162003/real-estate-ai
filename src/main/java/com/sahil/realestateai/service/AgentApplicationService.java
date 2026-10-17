@@ -130,6 +130,22 @@ private final AgentApplicationRepository agentApplicationRepository;
 		return convertToResponse(save);
 	 }
      
+     public Optional<AgentApplicationResponseDto> getMyApplication(String email) {
+
+    	    User user = userRepository.findByEmail(email)
+    	            .orElseThrow(() -> new RuntimeException("User not found"));
+
+    	    List<AgentApplication> applications =
+    	            agentApplicationRepository.findByUser(user);
+
+    	    return applications.stream()
+    	            .max((a, b) -> {
+    	                if (a.getAppliedAt() == null) return -1;
+    	                if (b.getAppliedAt() == null) return 1;
+    	                return a.getAppliedAt().compareTo(b.getAppliedAt());
+    	            })
+    	            .map(this::convertToResponse);
+    	}
      
 
 	 

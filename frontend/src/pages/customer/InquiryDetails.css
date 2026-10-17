@@ -1,0 +1,133 @@
+
+.inquiry-details-page {
+  min-height: 100vh;
+  padding: 32px;
+  background: #f3f6fb;
+  color: #172033;
+}
+
+.inquiry-details-header {
+  max-width: 1000px;
+  margin: 0 auto 28px;
+}
+
+.inquiry-details-header > a {
+  display: inline-block;
+  margin-bottom: 20px;
+  color: #2457ff;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.inquiry-details-header > a:hover {
+  text-decoration: underline;
+}
+
+.inquiry-details-header h1 {
+  margin: 0 0 8px;
+  font-size: 32px;
+  font-weight: 700;
+}
+
+.inquiry-details-header p {
+  margin: 0;
+  color: #64748b;
+  line-height: 1.6;
+}
+
+.inquiry-details-card {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 28px;
+  background: #ffffff;
+  border: 1px solid #e0e7f0;
+  border-radius: 16px;
+  box-shadow: 0 5px 20px rgb(15 23 42 / 5%);
+}
+
+.inquiry-details-label {
+  margin: 0 0 12px;
+  color: #2457ff;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 1px;
+}
+
+.inquiry-details-card h2 {
+  margin: 0 0 20px;
+  font-size: 24px;
+}
+
+.inquiry-details-card > p {
+  color: #475569;
+  line-height: 1.7;
+}
+
+.inquiry-details-message {
+  margin: 24px 0;
+  padding: 24px;
+  background: #f7f9fc;
+  border-radius: 12px;
+}
+
+.inquiry-details-message h3 {
+  margin: 0 0 12px;
+  font-size: 16px;
+}
+
+.inquiry-details-message p {
+  margin: 0;
+  color: #475569;
+  line-height: 1.8;
+  overflow-wrap: anywhere;
+}
+
+.inquiry-details-property-link {
+  display: inline-block;
+  margin-top: 12px;
+  color: #2457ff;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.inquiry-details-property-link:hover {
+  text-decoration: underline;
+}
+
+.inquiry-details-error {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 20px;
+  background: #fff1f2;
+  border: 1px solid #fecdd3;
+  border-radius: 12px;
+  color: #9f1239;
+}
+
+.inquiry-details-error button {
+  padding: 10px 16px;
+  background: #2457ff;
+  border: none;
+  border-radius: 8px;
+  color: #ffffff;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+@media (max-width: 600px) {
+  .inquiry-details-page {
+    padding: 20px 14px;
+  }
+
+  .inquiry-details-header h1 {
+    font-size: 26px;
+  }
+
+  .inquiry-details-card {
+    padding: 20px;
+  }
+
+  .inquiry-details-card h2 {
+    font-size: 21px;
+  }
+}
