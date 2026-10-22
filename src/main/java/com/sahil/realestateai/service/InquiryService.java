@@ -1,3 +1,4 @@
+
 package com.sahil.realestateai.service;
 
 import java.time.LocalDateTime;
@@ -28,275 +29,324 @@ import lombok.RequiredArgsConstructor;
 @Service
 @RequiredArgsConstructor
 public class InquiryService {
-	
-	private final InquiryRepository inquiryRepository;
-	private final UserRepository userRepository;
-	private final PropertyRepository propertyReposittory;
-	
 
-	public  InquiryResponseDto propertyInquiry(Long propertyId,String connect) {
-		
-		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-		String name = auth.getName();
-		
-		User user = userRepository.findByEmail(name).orElseThrow(() ->new UserNotFoundException("user not found"));
-		
-		Property property = propertyReposittory.findById(propertyId).orElseThrow(() ->new PropertyNotFoundException("Propert not found"));
-		
-		if (property.getStatus() != PropertyStatus.AVAILABLE) {
-		    throw new PropertyInquiryNotAllowedException(
-		            "Inquiry cannot be created for a "
-		            + property.getStatus()
-		            + " property"
-		    );
-		}
-		
-		PropertyInquiry propertyInquiry = new PropertyInquiry();
-		
-		propertyInquiry.setProperty(property);
-		propertyInquiry.setMessage(connect);
-		propertyInquiry.setCustomer(user);
-		propertyInquiry.setStatus(InquiryStatus.PENDING);
-		
-		PropertyInquiry save = inquiryRepository.save(propertyInquiry);
-		return convertToResponse(save);
-	}
-	 private InquiryResponseDto convertToResponse(
-	            PropertyInquiry inquiry) {
+    private final InquiryRepository inquiryRepository;
+    private final UserRepository userRepository;
+    private final PropertyRepository propertyReposittory;
 
-	        InquiryResponseDto response =
-	                new InquiryResponseDto();
+    public InquiryResponseDto propertyInquiry(
+            Long propertyId,
+            String connect) {
 
-	        User customer = inquiry.getCustomer();
+        Authentication auth =
+                SecurityContextHolder.getContext().getAuthentication();
 
-	        response.setId(inquiry.getId());
+        String name = auth.getName();
 
-	        response.setCustomerId(customer.getId());
+        User user = userRepository.findByEmail(name)
+                .orElseThrow(() ->
+                        new UserNotFoundException("User not found"));
 
-	        response.setCustomerName(
-	                customer.getFirstName()
-	                        + " "
-	                        + customer.getLastName()
-	        );
+        
+        String phoneNumber = user.getPhoneNumber();
+        String address = user.getAddress();
 
-	        response.setCustomerEmail(
-	                customer.getEmail()
-	        );
+        if (phoneNumber == null
+                || !phoneNumber.trim().matches("^[6-9]\\d{9}$")) {
+            throw new IllegalArgumentException(
+                    "Please update your profile with a valid phone number before sending an inquiry");
+        }
 
-	        response.setPropertyId(
-	                inquiry.getProperty().getId()
-	        );
+        if (address == null
+                || address.isBlank()
+                || address.trim().length() > 255) {
+            throw new IllegalArgumentException(
+                    "Please update your profile with a valid address before sending an inquiry");
+        }
+        Property property = propertyReposittory.findById(propertyId)
+                .orElseThrow(() ->
+                        new PropertyNotFoundException("Property not found"));
 
-	        response.setMessage(
-	                inquiry.getMessage()
-	        );
+        if (property.getStatus() != PropertyStatus.AVAILABLE) {
+            throw new PropertyInquiryNotAllowedException(
+                    "Inquiry cannot be created for a "
+                            + property.getStatus()
+                            + " property");
+        }
 
-	        response.setStatus(
-	                inquiry.getStatus()
-	        );
+        PropertyInquiry propertyInquiry = new PropertyInquiry();
 
-	        response.setCreatedAt(
-	                inquiry.getCreatedAt()
-	        );
+        propertyInquiry.setProperty(property);
+        propertyInquiry.setMessage(connect);
+        propertyInquiry.setCustomer(user);
+        propertyInquiry.setStatus(InquiryStatus.PENDING);
 
-	        response.setContactedAt(
-	                inquiry.getContactedAt()
-	        );
+        PropertyInquiry saved = inquiryRepository.save(propertyInquiry);
 
-	        response.setClosedAt(
-	                inquiry.getClosedAt()
-	        );
+        return convertToResponse(saved);
+    }
 
-	        return response;
-	    }
-	 
-	 public List<InquiryResponseDto> getInquiries() {
-		 
-		 
-		 Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-		           String name = auth.getName();
-		           User byEmail = userRepository.findByEmail(name).orElseThrow(()->new UserNotFoundException("user not found"));
-		 List<PropertyInquiry> inquiries = inquiryRepository.findByCustomer(byEmail);
-		 
-		return inquiries.stream().map(this::convertToResponse).toList();
-	 }
-	 
-	 public InquiryResponseDto getInquiry(Long inquiryId) {
-		  Authentication auth =
-		            SecurityContextHolder.getContext().getAuthentication();
+    private InquiryResponseDto convertToResponse(
+            PropertyInquiry inquiry) {
 
-		    String email = auth.getName();
+        InquiryResponseDto response = new InquiryResponseDto();
 
-		    User user = userRepository.findByEmail(email)
-		            .orElseThrow(() ->
-		                    new UserNotFoundException("User not found"));
+        User customer = inquiry.getCustomer();
 
-		    PropertyInquiry inquiry =
-		            inquiryRepository.findById(inquiryId)
-		                    .orElseThrow(() ->
-		                            new InquiryNotFoundException("Inquiry not found"));
+        response.setId(inquiry.getId());
+        response.setCustomerId(customer.getId());
 
-		    if (!inquiry.getCustomer().getId().equals(user.getId())) {
+        response.setCustomerName(
+                customer.getFirstName()
+                        + " "
+                        + customer.getLastName());
 
-		        throw new UnauthorizedInquiryException(
-		                "You are not authorized to view this inquiry");
-		    }
+        response.setCustomerEmail(customer.getEmail());
+        response.setPropertyId(inquiry.getProperty().getId());
+        response.setMessage(inquiry.getMessage());
 
-		    return convertToResponse(inquiry);
-	 }
-	 
-	 public List<InquiryResponseDto> getAgentInquiries() {
+        // Include the agent's response.
+        response.setAgentResponse(inquiry.getAgentResponse());
 
-		    Authentication auth =
-		            SecurityContextHolder
-		                    .getContext()
-		                    .getAuthentication();
+        response.setStatus(inquiry.getStatus());
+        response.setCreatedAt(inquiry.getCreatedAt());
+        response.setContactedAt(inquiry.getContactedAt());
+        response.setClosedAt(inquiry.getClosedAt());
 
-		    String email = auth.getName();
+        return response;
+    }
 
-		    User agent = userRepository.findByEmail(email)
-		            .orElseThrow(() ->
-		                    new UserNotFoundException("User not found"));
+    public List<InquiryResponseDto> getInquiries() {
 
-		    List<PropertyInquiry> inquiries =
-		            inquiryRepository.findByPropertyOwner(agent);
+        Authentication auth =
+                SecurityContextHolder.getContext().getAuthentication();
 
-		    return inquiries.stream()
-		            .map(this::convertToResponse)
-		            .toList();
-		}
-	 
-	 public InquiryResponseDto updateInquiryStatus(
-		        Long inquiryId,
-		        InquiryStatus newStatus) {
+        String name = auth.getName();
 
-		    Authentication auth =
-		            SecurityContextHolder
-		                    .getContext()
-		                    .getAuthentication();
+        User customer = userRepository.findByEmail(name)
+                .orElseThrow(() ->
+                        new UserNotFoundException("User not found"));
 
-		    String email = auth.getName();
+        List<PropertyInquiry> inquiries =
+                inquiryRepository.findByCustomer(customer);
 
-		    User agent = userRepository.findByEmail(email)
-		            .orElseThrow(() ->
-		                    new UserNotFoundException("User not found"));
+        return inquiries.stream()
+                .map(this::convertToResponse)
+                .toList();
+    }
 
-		    PropertyInquiry inquiry =
-		            inquiryRepository.findById(inquiryId)
-		                    .orElseThrow(() ->
-		                            new InquiryNotFoundException("Inquiry not found"));
+    public InquiryResponseDto getInquiry(Long inquiryId) {
 
-		    // Check that this inquiry belongs to
-		    // a property owned by the logged-in agent
-		    if (!inquiry.getProperty()
-		            .getOwner()
-		            .getId()
-		            .equals(agent.getId())) {
+        Authentication auth =
+                SecurityContextHolder.getContext().getAuthentication();
 
-		        throw new UnauthorizedInquiryException(
-		                "You are not authorized to update this inquiry");
-		    }
-		    
+        String email = auth.getName();
 
-		    validateStatusTransition(
-		            inquiry.getStatus(),
-		            newStatus
-		    );
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() ->
+                        new UserNotFoundException("User not found"));
 
-		    // Update status
-		    inquiry.setStatus(newStatus);
+        PropertyInquiry inquiry = inquiryRepository.findById(inquiryId)
+                .orElseThrow(() ->
+                        new InquiryNotFoundException("Inquiry not found"));
 
-		    if (newStatus == InquiryStatus.CONTACTED) {
+        if (!inquiry.getCustomer().getId().equals(user.getId())) {
+            throw new UnauthorizedInquiryException(
+                    "You are not authorized to view this inquiry");
+        }
 
-		        if (inquiry.getContactedAt() == null) {
-		            inquiry.setContactedAt(LocalDateTime.now());
-		        }
-		    }
+        return convertToResponse(inquiry);
+    }
 
-		    if (newStatus == InquiryStatus.CLOSED) {
+    public List<InquiryResponseDto> getAgentInquiries() {
 
-		        if (inquiry.getClosedAt() == null) {
-		            inquiry.setClosedAt(LocalDateTime.now());
-		        }
-		    }
+        Authentication auth =
+                SecurityContextHolder.getContext().getAuthentication();
 
-		    PropertyInquiry save =
-		            inquiryRepository.save(inquiry);
+        String email = auth.getName();
 
-		    return convertToResponse(save);
-		}
-	 
-	 public List<InquiryResponseDto> getAllInquiries() {
+        User agent = userRepository.findByEmail(email)
+                .orElseThrow(() ->
+                        new UserNotFoundException("User not found"));
 
-		    List<PropertyInquiry> inquiries =
-		            inquiryRepository.findAll();
+        List<PropertyInquiry> inquiries =
+                inquiryRepository.findByPropertyOwner(agent);
 
-		    return inquiries.stream()
-		            .map(this::convertToResponse)
-		            .toList();
-		}
-	 
-	 public InquiryResponseDto getInquiryByIdForAdmin(Long inquiryId) {
+        return inquiries.stream()
+                .map(this::convertToResponse)
+                .toList();
+    }
 
-		    PropertyInquiry inquiry =
-		            inquiryRepository.findById(inquiryId)
-		                    .orElseThrow(() ->
-		                            new InquiryNotFoundException("Inquiry not found"));
+    public InquiryResponseDto updateInquiryStatus(
+            Long inquiryId,
+            InquiryStatus newStatus) {
 
-		    return convertToResponse(inquiry);
-		}
-	 
-	 public InquiryResponseDto updateInquiryStatusByAdmin(
-		        Long inquiryId,
-		        InquiryStatus newStatus) {
+        Authentication auth =
+                SecurityContextHolder.getContext().getAuthentication();
 
-		    PropertyInquiry inquiry =
-		            inquiryRepository.findById(inquiryId)
-		                    .orElseThrow(() ->
-		                            new InquiryNotFoundException("Inquiry not found"));
-		    
-		    validateStatusTransition(
-		            inquiry.getStatus(),
-		            newStatus
-		    );
+        String email = auth.getName();
 
-		    inquiry.setStatus(newStatus);
+        User agent = userRepository.findByEmail(email)
+                .orElseThrow(() ->
+                        new UserNotFoundException("User not found"));
 
-		    if (newStatus == InquiryStatus.CONTACTED
-		            && inquiry.getContactedAt() == null) {
+        PropertyInquiry inquiry = inquiryRepository.findById(inquiryId)
+                .orElseThrow(() ->
+                        new InquiryNotFoundException("Inquiry not found"));
 
-		        inquiry.setContactedAt(LocalDateTime.now());
-		    }
+        // Verify that the agent owns the property's inquiry.
+        if (!inquiry.getProperty()
+                .getOwner()
+                .getId()
+                .equals(agent.getId())) {
 
-		    if (newStatus == InquiryStatus.CLOSED
-		            && inquiry.getClosedAt() == null) {
+            throw new UnauthorizedInquiryException(
+                    "You are not authorized to update this inquiry");
+        }
 
-		        inquiry.setClosedAt(LocalDateTime.now());
-		    }
+        validateStatusTransition(inquiry.getStatus(), newStatus);
 
-		    PropertyInquiry saved =
-		            inquiryRepository.save(inquiry);
+        inquiry.setStatus(newStatus);
 
-		    return convertToResponse(saved);
-		}
-	 
-	 private void validateStatusTransition(
-		        InquiryStatus current,
-		        InquiryStatus next) {
+        if (newStatus == InquiryStatus.CONTACTED
+                && inquiry.getContactedAt() == null) {
+            inquiry.setContactedAt(LocalDateTime.now());
+        }
 
-		    if (current == InquiryStatus.PENDING
-		            && next == InquiryStatus.CONTACTED) {
-		        return;
-		    }
+        if (newStatus == InquiryStatus.CLOSED
+                && inquiry.getClosedAt() == null) {
+            inquiry.setClosedAt(LocalDateTime.now());
+        }
 
-		    if (current == InquiryStatus.CONTACTED
-		            && next == InquiryStatus.CLOSED) {
-		        return;
-		    }
+        PropertyInquiry saved = inquiryRepository.save(inquiry);
 
-		    throw new InvalidInquiryStatusException(
-		            "Invalid status transition: "
-		            + current + " → " + next);
-		}
+        return convertToResponse(saved);
+    }
 
+    // Allows the property-owning agent to respond to an inquiry.
+    public InquiryResponseDto respondToInquiry(
+            Long inquiryId,
+            String agentResponse) {
+
+        Authentication auth =
+                SecurityContextHolder.getContext().getAuthentication();
+
+        String email = auth.getName();
+
+        User agent = userRepository.findByEmail(email)
+                .orElseThrow(() ->
+                        new UserNotFoundException("User not found"));
+
+        PropertyInquiry inquiry = inquiryRepository.findById(inquiryId)
+                .orElseThrow(() ->
+                        new InquiryNotFoundException("Inquiry not found"));
+
+        // Only the owner of the property can respond.
+        if (!inquiry.getProperty()
+                .getOwner()
+                .getId()
+                .equals(agent.getId())) {
+
+            throw new UnauthorizedInquiryException(
+                    "You are not authorized to respond to this inquiry");
+        }
+
+        // Validate the response text.
+        if (agentResponse == null || agentResponse.isBlank()) {
+            throw new IllegalArgumentException(
+                    "Agent response cannot be empty");
+        }
+
+        String trimmedResponse = agentResponse.trim();
+
+        if (trimmedResponse.length() > 2000) {
+            throw new IllegalArgumentException(
+                    "Agent response cannot exceed 2000 characters");
+        }
+
+        // Closed inquiries cannot receive a response.
+        if (inquiry.getStatus() == InquiryStatus.CLOSED) {
+            throw new InvalidInquiryStatusException(
+                    "Cannot respond to a closed inquiry");
+        }
+
+        inquiry.setAgentResponse(trimmedResponse);
+
+        // Automatically mark a pending inquiry as contacted.
+        if (inquiry.getStatus() == InquiryStatus.PENDING) {
+            inquiry.setStatus(InquiryStatus.CONTACTED);
+        }
+
+        if (inquiry.getContactedAt() == null) {
+            inquiry.setContactedAt(LocalDateTime.now());
+        }
+
+        PropertyInquiry saved = inquiryRepository.save(inquiry);
+
+        return convertToResponse(saved);
+    }
+
+    public List<InquiryResponseDto> getAllInquiries() {
+
+        List<PropertyInquiry> inquiries = inquiryRepository.findAll();
+
+        return inquiries.stream()
+                .map(this::convertToResponse)
+                .toList();
+    }
+
+    public InquiryResponseDto getInquiryByIdForAdmin(Long inquiryId) {
+
+        PropertyInquiry inquiry = inquiryRepository.findById(inquiryId)
+                .orElseThrow(() ->
+                        new InquiryNotFoundException("Inquiry not found"));
+
+        return convertToResponse(inquiry);
+    }
+
+    public InquiryResponseDto updateInquiryStatusByAdmin(
+            Long inquiryId,
+            InquiryStatus newStatus) {
+
+        PropertyInquiry inquiry = inquiryRepository.findById(inquiryId)
+                .orElseThrow(() ->
+                        new InquiryNotFoundException("Inquiry not found"));
+
+        validateStatusTransition(inquiry.getStatus(), newStatus);
+
+        inquiry.setStatus(newStatus);
+
+        if (newStatus == InquiryStatus.CONTACTED
+                && inquiry.getContactedAt() == null) {
+            inquiry.setContactedAt(LocalDateTime.now());
+        }
+
+        if (newStatus == InquiryStatus.CLOSED
+                && inquiry.getClosedAt() == null) {
+            inquiry.setClosedAt(LocalDateTime.now());
+        }
+
+        PropertyInquiry saved = inquiryRepository.save(inquiry);
+
+        return convertToResponse(saved);
+    }
+
+    private void validateStatusTransition(
+            InquiryStatus current,
+            InquiryStatus next) {
+
+        if (current == InquiryStatus.PENDING
+                && next == InquiryStatus.CONTACTED) {
+            return;
+        }
+
+        if (current == InquiryStatus.CONTACTED
+                && next == InquiryStatus.CLOSED) {
+            return;
+        }
+
+        throw new InvalidInquiryStatusException(
+                "Invalid status transition: "
+                        + current + " → " + next);
+    }
 }

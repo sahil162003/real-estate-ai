@@ -1,5 +1,5 @@
 package com.sahil.realestateai.controller;
-
+import com.sahil.realestateai.dto.PropertyImageResponseDto;
 import java.util.List;
 import java.util.Optional;
 
@@ -70,7 +70,7 @@ public class CustomerController {
     }
     
     @GetMapping("/property/{propertyId}/images")
-    public List<String> getImages(@PathVariable Long propertyId) {
+    public List<PropertyImageResponseDto> getImages(@PathVariable Long propertyId) {
 
         return propertyImageService.getImages(propertyId);
     }

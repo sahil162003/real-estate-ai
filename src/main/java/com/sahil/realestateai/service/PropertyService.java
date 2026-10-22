@@ -137,42 +137,81 @@ public class PropertyService {
 	    return "Deleted successfully";
 	}
 
-	public PropertyPageResponseDto searchProperties(String location, Integer bedroom, Double minPrice, Double maxPrice,String sortBy, String sortOrder, int page) {
-		
-	if(!sortBy.equalsIgnoreCase("price") && !sortBy.equalsIgnoreCase("bedrooms") && !sortBy.equalsIgnoreCase("createdAt")) {
-			throw new IllegalArgumentException("Invalid sortBy parameter. Allowed values are: price, bedrooms, createdAt");
-		}
-	if(!sortOrder.equalsIgnoreCase("asc") && !sortOrder.equalsIgnoreCase("desc")) {
-			throw new IllegalArgumentException("Invalid sortOrder parameter. Allowed values are: asc, desc");
-		}
-	
-	
-	
-		Sort sort = sortOrder.equalsIgnoreCase("asc")
-		        ? Sort.by(sortBy).ascending()
-		        : Sort.by(sortBy).descending();
 
-		    Pageable pageable = PageRequest.of(page, 10, sort);
 
-		    Specification<Property> specification =
-		            Specification
-		                    .where(PropertySpecification.hasLocation(location))
-		                    .and(PropertySpecification.hasBedrooms(bedroom))
-		                    .and(PropertySpecification.hasMinPrice(minPrice))
-		                    .and(PropertySpecification.hasMaxPrice(maxPrice));
+public PropertyPageResponseDto searchProperties(
+        String location,
+        Integer bedroom,
+        Double minPrice,
+        Double maxPrice,
+        String sortBy,
+        String sortOrder,
+        int page) {
 
-		    Page<PropertyResponseDto> propertyPage = propertyRepository.findAll(specification, pageable)
-		            .map(propertyMapper::toResponse);
-		    
-		    return new PropertyPageResponseDto(
-		            propertyPage.getContent(),
-		            propertyPage.getNumber(),
-		            propertyPage.getSize(),
-		            propertyPage.getTotalElements(),
-		            propertyPage.getTotalPages(),
-		            propertyPage.isLast()
-		    );
-	}
+    return searchProperties(
+            location, bedroom, minPrice, maxPrice,
+            null, sortBy, sortOrder, page
+    );
+}
+
+public PropertyPageResponseDto searchProperties(
+        String location,
+        Integer bedroom,
+        Double minPrice,
+        Double maxPrice,
+        String propertyType,
+        String sortBy,
+        String sortOrder,
+        int page) {
+
+    if (sortBy == null
+            || (!sortBy.equalsIgnoreCase("price")
+            && !sortBy.equalsIgnoreCase("bedrooms")
+            && !sortBy.equalsIgnoreCase("createdAt"))) {
+        throw new IllegalArgumentException(
+                "Invalid sortBy parameter. Allowed values are: price, bedrooms, createdAt");
+    }
+
+    if (sortOrder == null
+            || (!sortOrder.equalsIgnoreCase("asc")
+            && !sortOrder.equalsIgnoreCase("desc"))) {
+        throw new IllegalArgumentException(
+                "Invalid sortOrder parameter. Allowed values are: asc, desc");
+    }
+
+    if (page < 0) {
+        throw new IllegalArgumentException("Page cannot be negative");
+    }
+
+    Sort sort = sortOrder.equalsIgnoreCase("asc")
+            ? Sort.by(sortBy).ascending()
+            : Sort.by(sortBy).descending();
+
+    Pageable pageable = PageRequest.of(page, 10, sort);
+
+    Specification<Property> specification =
+            Specification
+                    .where(PropertySpecification.hasLocation(location))
+                    .and(PropertySpecification.hasBedrooms(bedroom))
+                    .and(PropertySpecification.hasMinPrice(minPrice))
+                    .and(PropertySpecification.hasMaxPrice(maxPrice))
+                    .and(PropertySpecification.hasPropertyType(propertyType));
+
+    Page<PropertyResponseDto> propertyPage =
+            propertyRepository.findAll(specification, pageable)
+                    .map(propertyMapper::toResponse);
+
+    return new PropertyPageResponseDto(
+            propertyPage.getContent(),
+            propertyPage.getNumber(),
+            propertyPage.getSize(),
+            propertyPage.getTotalElements(),
+            propertyPage.getTotalPages(),
+            propertyPage.isLast()
+    );
+}
+
+
 
 	public PropertyResponseDto updatePropertyStatus(Long propertyId, PropertyStatus status) {
 		

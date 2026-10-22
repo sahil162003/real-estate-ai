@@ -28,8 +28,22 @@ private final AgentApplicationRepository agentApplicationRepository;
 	public AgentApplicationResponseDto applyForAgent(String email, AgentApplicationRequestDto reason) {
 		
 		User user = userRepository.findByEmail(email).orElseThrow(() -> new RuntimeException("you are not a valid user"));
+		String phoneNumber = user.getPhoneNumber();
+		String address = user.getAddress();
+
+		if (phoneNumber == null
+		        || !phoneNumber.trim().matches("^[6-9]\\d{9}$")) {
+		    throw new IllegalArgumentException(
+		            "Please update your profile with a valid phone number before applying to become an agent");
+		}
+
+		if (address == null
+		        || address.isBlank()
+		        || address.trim().length() > 255) {
+		    throw new IllegalArgumentException(
+		            "Please update your profile with a valid address before applying to become an agent");
+		}
 		
-		System.out.println("User role: " + user.getRole());
 		if(user.getRole()!=Role.CUSTOMER) {
 			throw new RuntimeException("You are not  an customer");
 		}

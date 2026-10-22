@@ -1,3 +1,4 @@
+
 package com.sahil.realestateai.specification;
 
 import org.springframework.data.jpa.domain.Specification;
@@ -7,9 +8,7 @@ import com.sahil.realestateai.entity.Property;
 public class PropertySpecification {
 
     public static Specification<Property> hasLocation(String location) {
-
         return (root, query, criteriaBuilder) -> {
-
             if (location == null || location.isBlank()) {
                 return null;
             }
@@ -22,9 +21,7 @@ public class PropertySpecification {
     }
 
     public static Specification<Property> hasBedrooms(Integer bedrooms) {
-
         return (root, query, criteriaBuilder) -> {
-
             if (bedrooms == null) {
                 return null;
             }
@@ -37,9 +34,7 @@ public class PropertySpecification {
     }
 
     public static Specification<Property> hasMinPrice(Double minPrice) {
-
         return (root, query, criteriaBuilder) -> {
-
             if (minPrice == null) {
                 return null;
             }
@@ -52,9 +47,7 @@ public class PropertySpecification {
     }
 
     public static Specification<Property> hasMaxPrice(Double maxPrice) {
-
         return (root, query, criteriaBuilder) -> {
-
             if (maxPrice == null) {
                 return null;
             }
@@ -62,6 +55,19 @@ public class PropertySpecification {
             return criteriaBuilder.lessThanOrEqualTo(
                     root.get("price"),
                     maxPrice
+            );
+        };
+    }
+
+    public static Specification<Property> hasPropertyType(String propertyType) {
+        return (root, query, criteriaBuilder) -> {
+            if (propertyType == null || propertyType.isBlank()) {
+                return null;
+            }
+
+            return criteriaBuilder.equal(
+                    criteriaBuilder.upper(root.get("propertyType").as(String.class)),
+                    propertyType.trim().toUpperCase()
             );
         };
     }

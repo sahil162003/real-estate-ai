@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useState } from "react";
+
+import { useCallback, useEffect, useMemo, useState } from "react";
 import AuthContext from "./AuthContext";
 import authService from "../api/services/authService";
 import { decodeJwt, isTokenExpired } from "../utils/jwt";
@@ -8,17 +9,15 @@ export default function AuthProvider({ children }) {
     () => sessionStorage.getItem("token")
   );
 
-  const [user, setUser] = useState(
-    () => {
-      const storedUser = sessionStorage.getItem("user");
+  const [user, setUser] = useState(() => {
+    const storedUser = sessionStorage.getItem("user");
 
-      try {
-        return storedUser ? JSON.parse(storedUser) : null;
-      } catch {
-        return null;
-      }
+    try {
+      return storedUser ? JSON.parse(storedUser) : null;
+    } catch {
+      return null;
     }
-  );
+  });
 
   useEffect(() => {
     if (!token) {
@@ -46,53 +45,57 @@ export default function AuthProvider({ children }) {
 
     const currentUser = {
       email: payload.sub,
-      role: payload.role,
+      role: String(payload.role || "").replace(/^ROLE_/, ""),
     };
 
     setUser(currentUser);
-    sessionStorage.setItem(
-      "user",
-      JSON.stringify(currentUser)
-    );
+    sessionStorage.setItem("user", JSON.stringify(currentUser));
   }, [token]);
 
-  const login = async (credentials) => {
-    const jwt = await authService.login(credentials);
-
+  const loginWithToken = useCallback((jwt, currentUser) => {
     const payload = decodeJwt(jwt);
 
-    if (!payload) {
-      throw new Error("Invalid login token received");
+    if (!payload || isTokenExpired(jwt)) {
+      throw new Error("Invalid or expired authentication token");
     }
 
-    const currentUser = {
-      email: payload.sub,
-      role: payload.role,
+    const normalizedUser = {
+      email: payload.sub || currentUser?.email,
+      role: String(
+        payload.role || currentUser?.role || ""
+      ).replace(/^ROLE_/, ""),
     };
 
+    if (!normalizedUser.email || !normalizedUser.role) {
+      throw new Error("Authentication token is missing user information");
+    }
+
     sessionStorage.setItem("token", jwt);
-    sessionStorage.setItem(
-      "user",
-      JSON.stringify(currentUser)
-    );
+    sessionStorage.setItem("user", JSON.stringify(normalizedUser));
 
     setToken(jwt);
-    setUser(currentUser);
+    setUser(normalizedUser);
 
-    return currentUser;
-  };
+    return normalizedUser;
+  }, []);
 
-  const register = async (userData) => {
+  const login = useCallback(async (credentials) => {
+    const jwt = await authService.login(credentials);
+
+    return loginWithToken(jwt, {});
+  }, [loginWithToken]);
+
+  const register = useCallback(async (userData) => {
     return authService.register(userData);
-  };
+  }, []);
 
-  const logout = () => {
+  const logout = useCallback(() => {
     sessionStorage.removeItem("token");
     sessionStorage.removeItem("user");
 
     setToken(null);
     setUser(null);
-  };
+  }, []);
 
   const value = useMemo(
     () => ({
@@ -101,10 +104,11 @@ export default function AuthProvider({ children }) {
       role: user?.role ?? null,
       isAuthenticated: Boolean(token && user),
       login,
+      loginWithToken,
       register,
       logout,
     }),
-    [token, user]
+    [token, user, login, loginWithToken, register, logout]
   );
 
   return (

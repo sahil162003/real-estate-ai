@@ -1,0 +1,141 @@
+
+.admin-agents-page {
+  width: 100%;
+  color: #1e293b;
+}
+
+.admin-agents-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.admin-agents-header h2 {
+  margin: 0 0 6px;
+  font-size: 24px;
+}
+
+.admin-agents-header p {
+  margin: 0;
+  color: #64748b;
+  font-size: 14px;
+}
+
+.admin-agents-refresh,
+.admin-agents-error button {
+  border: none;
+  border-radius: 8px;
+  padding: 10px 16px;
+  background: #2563eb;
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.admin-agents-refresh:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.admin-agents-summary {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-width: 240px;
+  margin-bottom: 20px;
+  padding: 20px;
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+}
+
+.admin-agents-summary span {
+  color: #64748b;
+  font-size: 13px;
+}
+
+.admin-agents-summary strong {
+  font-size: 30px;
+}
+
+.admin-agents-search {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 420px;
+  margin-bottom: 20px;
+  padding: 12px 14px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  outline: none;
+  font-size: 14px;
+}
+
+.admin-agents-search:focus {
+  border-color: #2563eb;
+}
+
+.admin-agents-table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+}
+
+.admin-agents-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 13px;
+}
+
+.admin-agents-table th,
+.admin-agents-table td {
+  padding: 15px 16px;
+  border-bottom: 1px solid #e2e8f0;
+  white-space: nowrap;
+}
+
+.admin-agents-table th {
+  background: #f8fafc;
+  color: #475569;
+  font-weight: 700;
+}
+
+.admin-agents-table tbody tr:hover {
+  background: #f8fafc;
+}
+
+.admin-agents-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.admin-agents-message {
+  padding: 24px;
+  color: #64748b;
+  text-align: center;
+}
+
+.admin-agents-error {
+  padding: 18px;
+  color: #b91c1c;
+  background: #fef2f2;
+  border-radius: 8px;
+}
+
+@media (max-width: 600px) {
+  .admin-agents-header {
+    align-items: flex-start;
+  }
+
+  .admin-agents-header h2 {
+    font-size: 20px;
+  }
+
+  .admin-agents-table th,
+  .admin-agents-table td {
+    padding: 12px;
+  }
+}

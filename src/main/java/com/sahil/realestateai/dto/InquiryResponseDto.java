@@ -1,3 +1,4 @@
+
 package com.sahil.realestateai.dto;
 
 import java.time.LocalDateTime;
@@ -20,6 +21,8 @@ public class InquiryResponseDto {
     private Long propertyId;
 
     private String message;
+
+    private String agentResponse;
 
     private InquiryStatus status;
 

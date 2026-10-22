@@ -1,42 +1,85 @@
 
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import agentApplicationService from "../../api/services/agentApplicationService";
+import userService from "../../api/services/userService";
+import { isProfileComplete } from "../../utils/profileValidation";
 import "./BecomeAgent.css";
 
 export default function BecomeAgent() {
+  const navigate = useNavigate();
+
   const [reason, setReason] = useState("");
   const [application, setApplication] = useState(null);
+  const [profileComplete, setProfileComplete] = useState(false);
+  const [checkingProfile, setCheckingProfile] = useState(true);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
-  const loadApplication = async () => {
-    try {
-      setLoading(true);
-      setError("");
-
-      const data =
-        await agentApplicationService.getMyApplicationStatus();
-
-      setApplication(data ?? null);
-    } catch (err) {
-      setError(
-        err.response?.data?.message ||
-          "Unable to load your application status."
-      );
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
-    loadApplication();
+    let active = true;
+
+    const loadData = async () => {
+      try {
+        setLoading(true);
+        setCheckingProfile(true);
+        setError("");
+
+        const [profileResult, applicationResult] = await Promise.allSettled([
+          userService.getMyProfile(),
+          agentApplicationService.getMyApplicationStatus(),
+        ]);
+
+        if (!active) return;
+
+        if (profileResult.status === "fulfilled") {
+          setProfileComplete(
+            isProfileComplete(profileResult.value)
+          );
+        } else {
+          setProfileComplete(false);
+          setError(
+            "Unable to verify your profile. Please open My Profile and try again."
+          );
+        }
+
+        if (applicationResult.status === "fulfilled") {
+          setApplication(applicationResult.value ?? null);
+        } else {
+          setError((previous) =>
+            previous ||
+            applicationResult.reason?.response?.data?.message ||
+            "Unable to load your application status."
+          );
+        }
+      } finally {
+        if (active) {
+          setLoading(false);
+          setCheckingProfile(false);
+        }
+      }
+    };
+
+    loadData();
+
+    return () => {
+      active = false;
+    };
   }, []);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
+    setError("");
+    setSuccess("");
+
+    if (!profileComplete) {
+      setError(
+        "Please complete your phone number and address before applying."
+      );
+      return;
+    }
 
     if (!reason.trim()) {
       setError("Please enter a reason for becoming an agent.");
@@ -45,15 +88,15 @@ export default function BecomeAgent() {
 
     try {
       setSubmitting(true);
-      setError("");
-      setSuccess("");
 
       const result =
         await agentApplicationService.applyForAgent(reason.trim());
 
       setApplication(result);
       setReason("");
-      setSuccess("Your agent application has been submitted successfully.");
+      setSuccess(
+        "Your agent application has been submitted successfully."
+      );
     } catch (err) {
       setError(
         err.response?.data?.message ||
@@ -86,8 +129,8 @@ export default function BecomeAgent() {
       </header>
 
       <section className="become-agent-card">
-        {loading ? (
-          <p role="status">Checking your application...</p>
+        {loading || checkingProfile ? (
+          <p role="status">Checking your profile and application...</p>
         ) : (
           <>
             {error && (
@@ -99,6 +142,19 @@ export default function BecomeAgent() {
             {success && (
               <div className="become-agent-success" role="status">
                 {success}
+              </div>
+            )}
+
+            {!profileComplete && (
+              <div className="become-agent-error" role="alert">
+                <h2>Complete Your Profile First</h2>
+                <p>
+                  Add a valid 10-digit Indian mobile number and your address
+                  before applying to become an agent.
+                </p>
+                <Link to="/customer/profile">
+                  Complete My Profile →
+                </Link>
               </div>
             )}
 
@@ -147,8 +203,8 @@ export default function BecomeAgent() {
 
                 {status === "APPROVED" && (
                   <p className="become-agent-note">
-                    Your application has been approved. You can now access
-                    agent features after signing in with your updated role.
+                    Your application has been approved. Sign in again if
+                    needed to refresh your role and access agent features.
                   </p>
                 )}
               </div>
@@ -190,7 +246,10 @@ export default function BecomeAgent() {
                   {reason.length}/1000 characters
                 </p>
 
-                <button type="submit" disabled={submitting}>
+                <button
+                  type="submit"
+                  disabled={submitting || !profileComplete}
+                >
                   {submitting ? "Submitting..." : "Submit Application"}
                 </button>
               </form>

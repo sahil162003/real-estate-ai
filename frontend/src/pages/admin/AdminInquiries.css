@@ -1,0 +1,203 @@
+
+.admin-inquiries-page {
+  width: 100%;
+  color: #1e293b;
+}
+
+.admin-inquiries-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.admin-inquiries-header h2 {
+  margin: 0 0 6px;
+  font-size: 24px;
+}
+
+.admin-inquiries-header p {
+  margin: 0;
+  color: #64748b;
+  font-size: 14px;
+}
+
+.admin-inquiries-refresh {
+  padding: 10px 16px;
+  border: none;
+  border-radius: 8px;
+  background: #2563eb;
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.admin-inquiries-refresh:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.admin-inquiries-summary {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-width: 240px;
+  margin-bottom: 20px;
+  padding: 20px;
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+}
+
+.admin-inquiries-summary span {
+  color: #64748b;
+  font-size: 13px;
+}
+
+.admin-inquiries-summary strong {
+  font-size: 30px;
+}
+
+.admin-inquiries-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.admin-inquiries-search,
+.admin-inquiries-status-filter {
+  box-sizing: border-box;
+  min-height: 44px;
+  padding: 11px 14px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  background: white;
+  font-size: 14px;
+}
+
+.admin-inquiries-search {
+  flex: 1;
+  min-width: 220px;
+}
+
+.admin-inquiries-status-filter {
+  min-width: 170px;
+}
+
+.admin-inquiries-search:focus,
+.admin-inquiries-status-filter:focus {
+  outline: none;
+  border-color: #2563eb;
+}
+
+.admin-inquiries-table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+}
+
+.admin-inquiries-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 13px;
+}
+
+.admin-inquiries-table th,
+.admin-inquiries-table td {
+  padding: 14px 16px;
+  border-bottom: 1px solid #e2e8f0;
+  vertical-align: top;
+}
+
+.admin-inquiries-table th {
+  background: #f8fafc;
+  color: #475569;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.admin-inquiries-table tbody tr:hover {
+  background: #f8fafc;
+}
+
+.admin-inquiries-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.admin-inquiries-message-cell {
+  min-width: 200px;
+  max-width: 320px;
+  overflow-wrap: anywhere;
+}
+
+.admin-inquiries-status {
+  display: inline-block;
+  padding: 5px 9px;
+  border-radius: 20px;
+  background: #eff6ff;
+  color: #1d4ed8;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.admin-inquiries-close-button {
+  padding: 8px 12px;
+  border: none;
+  border-radius: 7px;
+  background: #dc2626;
+  color: white;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.admin-inquiries-close-button:hover {
+  background: #b91c1c;
+}
+
+.admin-inquiries-close-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.admin-inquiries-closed-label {
+  color: #15803d;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.admin-inquiries-message {
+  padding: 24px;
+  color: #64748b;
+  text-align: center;
+}
+
+.admin-inquiries-error {
+  margin-bottom: 16px;
+  padding: 14px 18px;
+  border-radius: 8px;
+  background: #fef2f2;
+  color: #b91c1c;
+}
+
+@media (max-width: 600px) {
+  .admin-inquiries-header {
+    align-items: flex-start;
+  }
+
+  .admin-inquiries-header h2 {
+    font-size: 20px;
+  }
+
+  .admin-inquiries-table th,
+  .admin-inquiries-table td {
+    padding: 12px;
+  }
+}

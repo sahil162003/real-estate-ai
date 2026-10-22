@@ -1,3 +1,4 @@
+
 package com.sahil.realestateai.entity;
 
 import java.time.LocalDateTime;
@@ -33,6 +34,9 @@ public class PropertyInquiry {
 
     @Column(nullable = false, length = 1000)
     private String message;
+
+    @Column(length = 2000)
+    private String agentResponse;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)

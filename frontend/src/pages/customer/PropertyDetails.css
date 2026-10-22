@@ -319,3 +319,39 @@
     width: 100%;
   }
 }
+
+
+
+.property-details-images {
+  margin: 24px 0;
+}
+
+.property-details-images h2 {
+  margin-bottom: 16px;
+  color: #1f2937;
+  font-size: 24px;
+}
+
+.property-details-image-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+}
+
+.property-details-image-grid img {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 480px;
+  object-fit: contain;
+  object-position: center;
+  border-radius: 12px;
+  background: #f3f4f6;
+}
+
+@media (max-width: 600px) {
+  .property-details-image-grid img {
+    max-height: 300px;
+  }
+}
+

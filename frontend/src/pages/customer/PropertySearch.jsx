@@ -1,8 +1,10 @@
 
 import { useCallback, useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../../auth/AuthContext";
 import propertyService from "../../api/services/propertyService";
 import favoriteService from "../../api/services/favoriteService";
+import aiSearchService from "../../api/services/aiSearchService";
 import "./PropertySearch.css";
 
 const initialFilters = {
@@ -41,7 +43,18 @@ const getFavoriteItems = (data) => {
 const getFavoritePropertyId = (item) =>
   item?.property?.id ?? item?.propertyId ?? item?.id;
 
+const getImageUrl = (image) => {
+  if (typeof image === "string") return image;
+  return image?.imageUrl ?? image?.url ?? "";
+};
+
 export default function PropertySearch() {
+  const navigate = useNavigate();
+  const { logout } = useAuth();
+  const [aiPrompt, setAiPrompt] = useState("");
+const [aiSearching, setAiSearching] = useState(false);
+const [aiError, setAiError] = useState("");
+
   const [filters, setFilters] = useState(initialFilters);
   const [properties, setProperties] = useState([]);
   const [page, setPage] = useState(0);
@@ -54,36 +67,77 @@ export default function PropertySearch() {
   const [favoriteLoadingId, setFavoriteLoadingId] = useState(null);
   const [favoriteError, setFavoriteError] = useState("");
 
-  const fetchProperties = useCallback(async (currentFilters, currentPage) => {
+  const handleSignOut = async () => {
     try {
-      setLoading(true);
-      setError("");
-
-      const result = await propertyService.searchProperties({
-        ...currentFilters,
-        page: currentPage,
-      });
-
-      setProperties(result.content ?? result.properties ?? []);
-      setPage(result.pageNumber ?? result.page ?? currentPage);
-      setTotalPages(result.totalPages ?? 0);
-      setTotalElements(result.totalElements ?? 0);
-    } catch (err) {
-      setProperties([]);
-      setTotalPages(0);
-      setTotalElements(0);
-
-      setError(
-        err.response?.data?.message ||
-          (typeof err.response?.data === "string"
-            ? err.response.data
-            : "") ||
-          "Unable to load properties. Please try again."
-      );
+      await logout();
     } finally {
-      setLoading(false);
+      navigate("/login", { replace: true });
     }
-  }, []);
+  };
+
+  const fetchProperties = useCallback(
+    async (currentFilters, currentPage) => {
+      try {
+        setLoading(true);
+        setError("");
+
+        const result = await propertyService.searchProperties({
+          ...currentFilters,
+          page: currentPage,
+        });
+
+        const propertyList =
+          result.content ?? result.properties ?? [];
+
+        const propertiesWithImages = await Promise.all(
+          propertyList.map(async (property) => {
+            try {
+              const images = await propertyService.getPropertyImages(
+                property.id
+              );
+
+              const imageList = Array.isArray(images) ? images : [];
+
+              return {
+                ...property,
+                imageUrl:
+                  imageList.length > 0
+                    ? getImageUrl(imageList[0])
+                    : "",
+              };
+            } catch (imageError) {
+              console.error(
+                `Unable to load images for property ${property.id}:`,
+                imageError
+              );
+
+              return { ...property, imageUrl: "" };
+            }
+          })
+        );
+
+        setProperties(propertiesWithImages);
+        setPage(result.pageNumber ?? result.page ?? currentPage);
+        setTotalPages(result.totalPages ?? 0);
+        setTotalElements(result.totalElements ?? 0);
+      } catch (err) {
+        setProperties([]);
+        setTotalPages(0);
+        setTotalElements(0);
+
+        setError(
+          err.response?.data?.message ||
+            (typeof err.response?.data === "string"
+              ? err.response.data
+              : "") ||
+            "Unable to load properties. Please try again."
+        );
+      } finally {
+        setLoading(false);
+      }
+    },
+    []
+  );
 
   useEffect(() => {
     fetchProperties(initialFilters, 0);
@@ -133,6 +187,7 @@ export default function PropertySearch() {
 
     const minPrice =
       filters.minPrice === "" ? null : Number(filters.minPrice);
+
     const maxPrice =
       filters.maxPrice === "" ? null : Number(filters.maxPrice);
 
@@ -165,6 +220,70 @@ export default function PropertySearch() {
     setPage(0);
     fetchProperties(filters, 0);
   };
+  
+const handleAISearch = async (event) => {
+  event.preventDefault();
+
+  const prompt = aiPrompt.trim();
+
+  if (!prompt) {
+    setAiError("Please describe the property you are looking for.");
+    return;
+  }
+
+  try {
+    setAiSearching(true);
+    setAiError("");
+    setError("");
+    setFavoriteError("");
+
+    const response = await aiSearchService.searchProperties(prompt);
+    const result = response.data;
+
+    const propertyList = result.properties ?? result.content ?? [];
+
+    const propertiesWithImages = await Promise.all(
+      propertyList.map(async (property) => {
+        try {
+          const images = await propertyService.getPropertyImages(property.id);
+          const imageList = Array.isArray(images) ? images : [];
+
+          return {
+            ...property,
+            imageUrl: imageList.length > 0
+              ? getImageUrl(imageList[0])
+              : "",
+          };
+        } catch (imageError) {
+          console.error(
+            `Unable to load images for property ${property.id}:`,
+            imageError
+          );
+
+          return { ...property, imageUrl: "" };
+        }
+      })
+    );
+
+    setProperties(propertiesWithImages);
+    setPage(result.page ?? result.pageNumber ?? 0);
+    setTotalPages(result.totalPages ?? 0);
+    setTotalElements(result.totalElements ?? propertyList.length);
+  } catch (err) {
+    console.error("AI property search failed:", err);
+
+    setAiError(
+      err.response?.data?.message ||
+      (typeof err.response?.data === "string"
+        ? err.response.data
+        : "") ||
+      "AI search failed. Please try again."
+    );
+  } finally {
+    setAiSearching(false);
+  }
+};
+
 
   const handleReset = () => {
     setFilters(initialFilters);
@@ -233,10 +352,50 @@ export default function PropertySearch() {
           <Link to="/customer/inquiries">My Inquiries</Link>
           <Link to="/customer/become-agent">Become an Agent</Link>
           <Link to="/customer/profile">My Profile</Link>
+
+          <button
+            type="button"
+            className="property-signout-button"
+            onClick={handleSignOut}
+          >
+            Sign Out
+          </button>
         </nav>
       </header>
-
+     
       <section className="property-search-content">
+        
+<section className="ai-property-search">
+  <div className="ai-property-search-heading">
+    <h2>✨ AI Property Search</h2>
+    <p>
+      Describe your ideal home in your own words.
+      AI will find matching properties for you.
+    </p>
+  </div>
+
+  <form onSubmit={handleAISearch} className="ai-property-search-form">
+    <input
+      type="text"
+      value={aiPrompt}
+      onChange={(event) => setAiPrompt(event.target.value)}
+      placeholder="e.g. Find a 2 BHK apartment in Thane under 80 lakh"
+      aria-label="Describe the property you are looking for"
+      disabled={aiSearching}
+    />
+
+    <button type="submit" disabled={aiSearching || !aiPrompt.trim()}>
+      {aiSearching ? "Finding properties..." : "Search with AI"}
+    </button>
+  </form>
+
+  {aiError && (
+    <p className="ai-property-search-error" role="alert">
+      {aiError}
+    </p>
+  )}
+</section>
+
         <form className="property-filter-panel" onSubmit={handleSearch}>
           <div className="property-filter-heading">
             <div>
@@ -411,16 +570,31 @@ export default function PropertySearch() {
                       key={property.id}
                     >
                       <div className="property-card-visual">
+                        {property.imageUrl ? (
+                          <img
+                            className="property-card-image"
+                            src={property.imageUrl}
+                            alt={
+                              property.title ||
+                              `Property ${property.id}`
+                            }
+                            loading="lazy"
+                            onError={(event) => {
+                              event.currentTarget.style.display = "none";
+                            }}
+                          />
+                        ) : (
+                          <span className="property-card-placeholder">
+                            Property #{property.id}
+                          </span>
+                        )}
+
                         <span className="property-card-type">
                           {formatLabel(property.propertyType)}
                         </span>
 
                         <span className="property-card-status">
                           {formatLabel(property.status)}
-                        </span>
-
-                        <span className="property-card-placeholder">
-                          Property #{property.id}
                         </span>
 
                         <button

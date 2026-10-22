@@ -32,6 +32,7 @@ export default function AgentEditProperty() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [deletingImageId, setDeletingImageId] = useState(null);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [images, setImages] = useState([]);
@@ -150,6 +151,44 @@ export default function AgentEditProperty() {
     }
   };
 
+  const handleDeleteImage = async (image) => {
+    if (!image?.id) {
+      setError(
+        "Image ID is missing. Refresh the page and try again."
+      );
+      return;
+    }
+
+    const confirmed = window.confirm(
+      "Are you sure you want to delete this property image?"
+    );
+
+    if (!confirmed) return;
+
+    try {
+      setDeletingImageId(image.id);
+      setError("");
+      setSuccess("");
+
+      await api.delete(`/api/properties/images/${image.id}`);
+
+      setImages((previous) =>
+        previous.filter((item) => item.id !== image.id)
+      );
+
+      setSuccess("Property image deleted successfully.");
+    } catch (err) {
+      console.error("Failed to delete property image:", err);
+
+      setError(
+        err.response?.data?.message ||
+          "Unable to delete this image. Please try again."
+      );
+    } finally {
+      setDeletingImageId(null);
+    }
+  };
+
   const handleSubmit = async (event) => {
     event.preventDefault();
 
@@ -177,12 +216,16 @@ export default function AgentEditProperty() {
     }
 
     if (!Number.isInteger(bedrooms) || bedrooms < 0) {
-      setError("Bedrooms must be a whole number greater than or equal to zero.");
+      setError(
+        "Bedrooms must be a whole number greater than or equal to zero."
+      );
       return;
     }
 
     if (!Number.isInteger(bathrooms) || bathrooms < 0) {
-      setError("Bathrooms must be a whole number greater than or equal to zero.");
+      setError(
+        "Bathrooms must be a whole number greater than or equal to zero."
+      );
       return;
     }
 
@@ -250,7 +293,10 @@ export default function AgentEditProperty() {
           {error}
         </p>
 
-        <Link to="/agent/properties" className="agent-edit-property-back">
+        <Link
+          to="/agent/properties"
+          className="agent-edit-property-back"
+        >
           Back to My Properties
         </Link>
       </main>
@@ -285,7 +331,7 @@ export default function AgentEditProperty() {
                 onChange={handleChange}
                 maxLength={150}
                 required
-                disabled={saving || uploading}
+                disabled={saving || uploading || deletingImageId !== null}
               />
             </div>
 
@@ -297,7 +343,7 @@ export default function AgentEditProperty() {
                 value={form.location}
                 onChange={handleChange}
                 required
-                disabled={saving || uploading}
+                disabled={saving || uploading || deletingImageId !== null}
               />
             </div>
 
@@ -312,7 +358,7 @@ export default function AgentEditProperty() {
                 value={form.price}
                 onChange={handleChange}
                 required
-                disabled={saving || uploading}
+                disabled={saving || uploading || deletingImageId !== null}
               />
             </div>
 
@@ -324,7 +370,7 @@ export default function AgentEditProperty() {
                 value={form.propertyType}
                 onChange={handleChange}
                 required
-                disabled={saving || uploading}
+                disabled={saving || uploading || deletingImageId !== null}
               >
                 <option value="">Select property type</option>
                 {propertyTypes.map((type) => (
@@ -346,7 +392,7 @@ export default function AgentEditProperty() {
                 value={form.bedrooms}
                 onChange={handleChange}
                 required
-                disabled={saving || uploading}
+                disabled={saving || uploading || deletingImageId !== null}
               />
             </div>
 
@@ -361,7 +407,7 @@ export default function AgentEditProperty() {
                 value={form.bathrooms}
                 onChange={handleChange}
                 required
-                disabled={saving || uploading}
+                disabled={saving || uploading || deletingImageId !== null}
               />
             </div>
 
@@ -376,7 +422,7 @@ export default function AgentEditProperty() {
                 value={form.area}
                 onChange={handleChange}
                 required
-                disabled={saving || uploading}
+                disabled={saving || uploading || deletingImageId !== null}
               />
             </div>
 
@@ -389,7 +435,7 @@ export default function AgentEditProperty() {
                 value={form.description}
                 onChange={handleChange}
                 required
-                disabled={saving || uploading}
+                disabled={saving || uploading || deletingImageId !== null}
               />
             </div>
           </div>
@@ -406,33 +452,55 @@ export default function AgentEditProperty() {
                 accept="image/*"
                 multiple
                 onChange={handleFileChange}
-                disabled={uploading || saving}
+                disabled={uploading || saving || deletingImageId !== null}
               />
             </div>
 
             {selectedFiles.length > 0 && (
-              <p>
-                {selectedFiles.length} image(s) selected
-              </p>
+              <p>{selectedFiles.length} image(s) selected</p>
             )}
 
             <button
               type="button"
               onClick={handleUploadImages}
-              disabled={uploading || saving || selectedFiles.length === 0}
+              disabled={
+                uploading ||
+                saving ||
+                deletingImageId !== null ||
+                selectedFiles.length === 0
+              }
             >
               {uploading ? "Uploading Images..." : "Upload Images"}
             </button>
 
             {images.length > 0 ? (
               <div className="agent-edit-property-image-grid">
-                {images.map((imageUrl, index) => (
-                  <img
-                    key={`${imageUrl}-${index}`}
-                    src={imageUrl}
-                    alt={`Property ${index + 1}`}
-                    loading="lazy"
-                  />
+                {images.map((image, index) => (
+                  <div
+                    className="agent-edit-property-image-item"
+                    key={image.id}
+                  >
+                    <img
+                      src={image.imageUrl}
+                      alt={`Property ${index + 1}`}
+                      loading="lazy"
+                    />
+
+                    <button
+                      type="button"
+                      className="agent-edit-property-image-delete"
+                      onClick={() => handleDeleteImage(image)}
+                      disabled={
+                        saving ||
+                        uploading ||
+                        deletingImageId !== null
+                      }
+                    >
+                      {deletingImageId === image.id
+                        ? "Deleting..."
+                        : "Delete Image"}
+                    </button>
+                  </div>
                 ))}
               </div>
             ) : (
@@ -460,7 +528,10 @@ export default function AgentEditProperty() {
               Cancel
             </Link>
 
-            <button type="submit" disabled={saving || uploading}>
+            <button
+              type="submit"
+              disabled={saving || uploading || deletingImageId !== null}
+            >
               {saving ? "Saving Changes..." : "Save Changes"}
             </button>
           </div>

@@ -28,8 +28,8 @@ const getPropertyId = (inquiry) =>
   inquiry.property?.propertyId;
 
 const getInquiryMessage = (inquiry) =>
-  inquiry.connect ??
   inquiry.message ??
+  inquiry.connect ??
   inquiry.inquiryMessage ??
   inquiry.description ??
   "No message available.";
@@ -46,6 +46,22 @@ const getPropertyTitle = (inquiry) =>
   (getPropertyId(inquiry) != null
     ? `Property #${getPropertyId(inquiry)}`
     : "Property inquiry");
+
+const getAgentResponse = (inquiry) =>
+  inquiry.agentResponse ?? inquiry.response ?? "";
+
+const getStatusClass = (status) => {
+  switch (String(status ?? "").toUpperCase()) {
+    case "PENDING":
+      return "my-inquiry-status-pending";
+    case "CONTACTED":
+      return "my-inquiry-status-contacted";
+    case "CLOSED":
+      return "my-inquiry-status-closed";
+    default:
+      return "my-inquiry-status-default";
+  }
+};
 
 export default function MyInquiries() {
   const [inquiries, setInquiries] = useState([]);
@@ -91,15 +107,14 @@ export default function MyInquiries() {
 
           <h1>My Inquiries</h1>
           <p>
-            View the property inquiries you have submitted.
+            Track your property inquiries and agent responses.
           </p>
         </div>
 
         <nav className="my-inquiries-nav">
           <Link to="/customer/search">Search Properties</Link>
           <Link to="/customer/favorites">My Favorites</Link>
-            <Link to="/customer/inquiries">My Inquiries</Link>
-
+          <Link to="/customer/inquiries">My Inquiries</Link>
           <Link to="/customer/profile">My Profile</Link>
         </nav>
       </header>
@@ -109,7 +124,10 @@ export default function MyInquiries() {
           <h2>Submitted Inquiries</h2>
 
           {!loading && !error && (
-            <span>{inquiries.length} inquiries</span>
+            <span>
+              {inquiries.length}{" "}
+              {inquiries.length === 1 ? "inquiry" : "inquiries"}
+            </span>
           )}
         </div>
 
@@ -130,7 +148,10 @@ export default function MyInquiries() {
 
         {!loading && !error && inquiries.length === 0 && (
           <div className="my-inquiries-empty">
-            <div className="my-inquiries-empty-icon" aria-hidden="true">
+            <div
+              className="my-inquiries-empty-icon"
+              aria-hidden="true"
+            >
               ✉
             </div>
 
@@ -156,23 +177,34 @@ export default function MyInquiries() {
               const inquiryId = getInquiryId(inquiry);
               const propertyId = getPropertyId(inquiry);
               const status = inquiry.status;
+              const agentResponse = getAgentResponse(inquiry);
+              const hasAgentResponse =
+                typeof agentResponse === "string"
+                  ? agentResponse.trim().length > 0
+                  : Boolean(agentResponse);
 
               return (
                 <article
                   className="my-inquiry-card"
-                  key={inquiryId ?? `${propertyId ?? "inquiry"}-${index}`}
+                  key={
+                    inquiryId ??
+                    `${propertyId ?? "inquiry"}-${index}`
+                  }
                 >
                   <div className="my-inquiry-card-header">
                     <div>
                       <p className="my-inquiry-label">
-                        INQUIRY {inquiryId != null ? `#${inquiryId}` : ""}
+                        INQUIRY{" "}
+                        {inquiryId != null ? `#${inquiryId}` : ""}
                       </p>
 
                       <h3>{getPropertyTitle(inquiry)}</h3>
                     </div>
 
                     {status && (
-                      <span className="my-inquiry-status">
+                      <span
+                        className={`my-inquiry-status ${getStatusClass(status)}`}
+                      >
                         {String(status).replaceAll("_", " ")}
                       </span>
                     )}
@@ -181,6 +213,26 @@ export default function MyInquiries() {
                   <div className="my-inquiry-message">
                     <h4>Your message</h4>
                     <p>{getInquiryMessage(inquiry)}</p>
+                  </div>
+
+                  <div
+                    className={`my-inquiry-response ${
+                      hasAgentResponse
+                        ? "my-inquiry-response-received"
+                        : "my-inquiry-response-pending"
+                    }`}
+                  >
+                    <h4>
+                      {hasAgentResponse
+                        ? "✓ Agent has responded"
+                        : "Waiting for agent response"}
+                    </h4>
+
+                    <p>
+                      {hasAgentResponse
+                        ? "Your agent has replied to this inquiry."
+                        : "Your inquiry has been submitted. Check back for an update."}
+                    </p>
                   </div>
 
                   <div className="my-inquiry-card-footer">

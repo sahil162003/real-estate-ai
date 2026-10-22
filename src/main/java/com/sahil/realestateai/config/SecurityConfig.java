@@ -90,14 +90,15 @@ public class SecurityConfig {
             // Authorization rules
             .authorizeHttpRequests(auth -> auth
 
-                // Public endpoints
-                .requestMatchers(
-                    "/api/users/register",
-                    "/api/users/login",
-                    "/oauth2/**",
-                    "/login/oauth2/**",
-                    "/error"
-                ).permitAll()
+            		// Public endpoints
+            		.requestMatchers(
+            		    "/api/users/register",
+            		    "/api/users/login",
+            		    "/api/images/**",
+            		    "/oauth2/**",
+            		    "/login/oauth2/**",
+            		    "/error"
+            		).permitAll()
 
                 // Admin only
                 .requestMatchers("/api/admin/**")

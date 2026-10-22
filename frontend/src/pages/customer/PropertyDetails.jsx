@@ -4,6 +4,9 @@ import { Link, useLocation, useParams } from "react-router-dom";
 import propertyService from "../../api/services/propertyService";
 import inquiryService from "../../api/services/inquiryService";
 import "./PropertyDetails.css";
+import { useNavigate } from "react-router-dom";
+import userService from "../../api/services/userService";
+import { isProfileComplete } from "../../utils/profileValidation";
 
 function formatPrice(price) {
   if (price == null) return "Price not available";
@@ -18,6 +21,7 @@ function formatPrice(price) {
 export default function PropertyDetails() {
   const { id } = useParams();
   const location = useLocation();
+  const navigate = useNavigate();
 
   const isAgentView = location.state?.from === "agent";
   const backPath = isAgentView ? "/agent/properties" : "/customer/search";
@@ -26,7 +30,9 @@ export default function PropertyDetails() {
     : "← Back to Property Search";
 
   const [property, setProperty] = useState(null);
+  const [images, setImages] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [imagesLoading, setImagesLoading] = useState(true);
   const [error, setError] = useState("");
 
   const [inquiryMessage, setInquiryMessage] = useState("");
@@ -40,12 +46,41 @@ export default function PropertyDetails() {
     const fetchProperty = async () => {
       try {
         setLoading(true);
+        setImagesLoading(true);
         setError("");
 
         const data = await propertyService.getPropertyById(id);
 
-        if (active) {
-          setProperty(data);
+        if (!active) return;
+        setProperty(data);
+
+        try {
+          const propertyImages =
+            await propertyService.getPropertyImages(id);
+
+          if (active) {
+            const normalizedImages = Array.isArray(propertyImages)
+              ? propertyImages
+                  .map((image) =>
+                    typeof image === "string"
+                      ? { imageUrl: image }
+                      : image
+                  )
+                  .filter((image) => Boolean(image?.imageUrl))
+              : [];
+
+            setImages(normalizedImages);
+          }
+        } catch (imageError) {
+          console.error("Failed to load property images:", imageError);
+
+          if (active) {
+            setImages([]);
+          }
+        } finally {
+          if (active) {
+            setImagesLoading(false);
+          }
         }
       } catch (err) {
         if (active) {
@@ -57,6 +92,7 @@ export default function PropertyDetails() {
       } finally {
         if (active) {
           setLoading(false);
+          setImagesLoading(false);
         }
       }
     };
@@ -68,36 +104,51 @@ export default function PropertyDetails() {
     };
   }, [id]);
 
-  const handleInquirySubmit = async (event) => {
-    event.preventDefault();
+ 
+const handleInquirySubmit = async (event) => {
+  event.preventDefault();
 
-    const message = inquiryMessage.trim();
+  const message = inquiryMessage.trim();
 
-    if (!message) {
-      setInquiryError("Please enter your inquiry message.");
+  if (!message) {
+    setInquiryError("Please enter your inquiry message.");
+    return;
+  }
+
+  try {
+    setInquiryLoading(true);
+    setInquiryError("");
+    setInquirySuccess("");
+
+    const profile = await userService.getMyProfile();
+
+    if (!isProfileComplete(profile)) {
+      setInquiryError(
+        "Please complete your phone number and address before sending an inquiry."
+      );
+
+      navigate("/customer/profile", {
+        state: { from: location.pathname },
+      });
       return;
     }
 
-    try {
-      setInquiryLoading(true);
-      setInquiryError("");
-      setInquirySuccess("");
+    await inquiryService.sendInquiry(property.id, message);
 
-      await inquiryService.sendInquiry(property.id, message);
+    setInquirySuccess(
+      "Your inquiry has been submitted successfully."
+    );
+    setInquiryMessage("");
+  } catch (err) {
+    setInquiryError(
+      err.response?.data?.message ||
+        "Unable to submit your inquiry. Please try again."
+    );
+  } finally {
+    setInquiryLoading(false);
+  }
+};
 
-      setInquirySuccess(
-        "Your inquiry has been submitted successfully."
-      );
-      setInquiryMessage("");
-    } catch (err) {
-      setInquiryError(
-        err.response?.data?.message ||
-          "Unable to submit your inquiry. Please try again."
-      );
-    } finally {
-      setInquiryLoading(false);
-    }
-  };
 
   if (loading) {
     return (
@@ -154,6 +205,27 @@ export default function PropertyDetails() {
         <div className="property-details-price">
           {formatPrice(property.price)}
         </div>
+
+        <section className="property-details-images">
+          <h2>Property Images</h2>
+
+          {imagesLoading ? (
+            <p>Loading property images...</p>
+          ) : images.length > 0 ? (
+            <div className="property-details-image-grid">
+              {images.map((image, index) => (
+                <img
+                  key={image.id ?? image.imageUrl}
+                  src={image.imageUrl}
+                  alt={`${property.title || "Property"} - Image ${index + 1}`}
+                  loading="lazy"
+                />
+              ))}
+            </div>
+          ) : (
+            <p>No images are available for this property.</p>
+          )}
+        </section>
 
         <div className="property-details-features">
           <div className="property-feature">

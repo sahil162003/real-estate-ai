@@ -1,8 +1,10 @@
+
 package com.sahil.realestateai.config;
 
 import java.io.IOException;
 import java.util.UUID;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.core.user.OAuth2User;
@@ -27,6 +29,9 @@ public class GoogleOAuth2SuccessHandler
     private final JwtService jwtService;
     private final PasswordEncoder passwordEncoder;
 
+    @Value("${app.frontend.url:http://localhost:5173}")
+    private String frontendUrl;
+
     @Override
     public void onAuthenticationSuccess(
             HttpServletRequest request,
@@ -34,69 +39,56 @@ public class GoogleOAuth2SuccessHandler
             Authentication authentication)
             throws IOException, ServletException {
 
-        // Get authenticated Google user
         OAuth2User oauth2User =
                 (OAuth2User) authentication.getPrincipal();
 
-        // Get Google user information
         String email = oauth2User.getAttribute("email");
         String firstName = oauth2User.getAttribute("given_name");
         String lastName = oauth2User.getAttribute("family_name");
 
-        // Find existing user or create a new user
+        if (email == null || email.isBlank()) {
+            response.sendError(
+                    HttpServletResponse.SC_UNAUTHORIZED,
+                    "Google account email is unavailable"
+            );
+            return;
+        }
+
         User user = userRepository.findByEmail(email)
                 .orElseGet(() -> {
-
                     User newUser = new User();
 
                     newUser.setEmail(email);
-
                     newUser.setFirstName(
-                            firstName != null
-                                    ? firstName
-                                    : "Google"
+                            firstName != null ? firstName : "Google"
                     );
-
                     newUser.setLastName(
-                            lastName != null
-                                    ? lastName
-                                    : "User"
+                            lastName != null ? lastName : "User"
                     );
-
-                    /*
-                     * Google users don't provide a password.
-                     * Generate a random encoded password so that
-                     * the User entity validation is satisfied.
-                     */
                     newUser.setPassword(
                             passwordEncoder.encode(
                                     UUID.randomUUID().toString()
                             )
                     );
-
-                    // New Google users are CUSTOMER by default
                     newUser.setRole(Role.CUSTOMER);
 
                     return userRepository.save(newUser);
                 });
 
-        /*
-         * Generate your application's JWT
-         * using the existing JwtService.
-         */
         String token = jwtService.generateToken(
                 user.getEmail(),
                 user.getRole().name()
         );
 
-        /*
-         * Return JWT to the client.
-         */
-        response.setContentType("application/json");
-        response.setCharacterEncoding("UTF-8");
+        // Redirect to React with the JWT in the URL fragment.
+        // Fragments are not sent to the backend in HTTP requests.
+        String redirectUrl = frontendUrl
+                + "/oauth2/callback#token="
+                + java.net.URLEncoder.encode(
+                        token,
+                        java.nio.charset.StandardCharsets.UTF_8
+                );
 
-        response.getWriter().write(
-                "{\"token\":\"" + token + "\"}"
-        );
+        response.sendRedirect(redirectUrl);
     }
 }

@@ -1,8 +1,8 @@
+
 package com.sahil.realestateai.service;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.springframework.security.core.Authentication;
@@ -10,6 +10,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.sahil.realestateai.dto.PropertyImageResponseDto;
 import com.sahil.realestateai.entity.Property;
 import com.sahil.realestateai.entity.PropertyImage;
 import com.sahil.realestateai.entity.Role;
@@ -27,44 +28,36 @@ public class PropertyImageService {
 
     private final PropertyImageRepository propertyImageRepository;
     private final PropertyRepository propertyRepository;
-    private final S3Service s3Service;
+    private final ImageStorageService imageStorageService;
     private final UserRepository userRepository;
 
-    public String addImage(Long propertyId, MultipartFile file) throws IOException {
+    public String addImage(Long propertyId, MultipartFile file)
+            throws IOException {
 
-        // Get property
+        if (file == null || file.isEmpty()) {
+            throw new IllegalArgumentException(
+                    "Please select an image to upload.");
+        }
+
         Property property = propertyRepository.findById(propertyId)
                 .orElseThrow(() ->
                         new PropertyNotFoundException("Property not found"));
 
-        // Get logged-in user
-        Authentication auth =
-                SecurityContextHolder.getContext().getAuthentication();
+        User loggedInUser = getLoggedInUser();
 
-        String email = auth.getName();
-
-        User loggedInUser = userRepository.findByEmail(email)
-                .orElseThrow(() ->
-                        new PropertyNotFoundException("User not found"));
-
-        // Check authorization
         if (!loggedInUser.getRole().equals(Role.ADMIN)) {
-
             User owner = property.getOwner();
 
-            if (!loggedInUser.getId().equals(owner.getId())) {
-
+            if (owner == null
+                    || !loggedInUser.getId().equals(owner.getId())) {
                 throw new PropertyNotFoundException(
                         "You are not authorized to add image to this property");
             }
         }
 
-        // Upload image to S3
-        String imageKey = s3Service.uploadImage(file);
+        String imageKey = imageStorageService.uploadImage(file);
 
-        // Save image information in PostgreSQL
         PropertyImage propertyImage = new PropertyImage();
-
         propertyImage.setProperty(property);
         propertyImage.setImageUrl(imageKey);
 
@@ -73,7 +66,7 @@ public class PropertyImageService {
         return "Image uploaded successfully";
     }
 
-    public List<String> getImages(Long propertyId) {
+    public List<PropertyImageResponseDto> getImages(Long propertyId) {
 
         Property property = propertyRepository.findById(propertyId)
                 .orElseThrow(() ->
@@ -81,42 +74,49 @@ public class PropertyImageService {
 
         return propertyImageRepository.findByProperty(property)
                 .stream()
-                .map(image ->
-                        s3Service.generatePresignedUrl(image.getImageUrl()))
+                .map(image -> new PropertyImageResponseDto(
+                        image.getId(),
+                        imageStorageService.generateImageUrl(
+                                image.getImageUrl())))
                 .collect(Collectors.toList());
     }
 
     public String deleteImage(Long imageId) {
-    	
-    	Authentication auth= SecurityContextHolder.getContext().getAuthentication();
-    	
-    	String email=auth.getName();
-    	Optional<User> loggedInUser=userRepository.findByEmail(email);
-    	User loguser=loggedInUser.get();
-    	
-    	
+
+        User loggedInUser = getLoggedInUser();
 
         PropertyImage image = propertyImageRepository.findById(imageId)
                 .orElseThrow(() ->
                         new PropertyNotFoundException("Image not found"));
 
-     if(!loguser.getRole().equals(Role.ADMIN)) {
-    		
-    	User user= image.getProperty().getOwner();;
-    		
-    	if(!loguser.getId().equals(user.getId())) {
-			
-			throw new PropertyNotFoundException("You are not authorized to delete this image");
-		}
-	 }
-    	
-    	
-        // Delete image from AWS S3
-        s3Service.deleteImage(image.getImageUrl());
+        if (!loggedInUser.getRole().equals(Role.ADMIN)) {
+            User owner = image.getProperty().getOwner();
 
-        // Delete image record from PostgreSQL
+            if (owner == null
+                    || !loggedInUser.getId().equals(owner.getId())) {
+                throw new PropertyNotFoundException(
+                        "You are not authorized to delete this image");
+            }
+        }
+
+        imageStorageService.deleteImage(image.getImageUrl());
         propertyImageRepository.delete(image);
 
         return "Image deleted successfully";
+    }
+
+    private User getLoggedInUser() {
+        Authentication auth =
+                SecurityContextHolder.getContext().getAuthentication();
+
+        if (auth == null || !auth.isAuthenticated()
+                || auth.getName() == null
+                || "anonymousUser".equals(auth.getName())) {
+            throw new PropertyNotFoundException("User not authenticated");
+        }
+
+        return userRepository.findByEmail(auth.getName())
+                .orElseThrow(() ->
+                        new PropertyNotFoundException("User not found"));
     }
 }
