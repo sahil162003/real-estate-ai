@@ -27,3 +27,27 @@ application-local.yml
 
 # Java
 *.class
+
+# Application secrets and local configuration
+src/main/resources/application.properties
+.env
+.env.*
+!.env.example
+
+# Build files
+target/
+node_modules/
+dist/
+
+# IDE files
+.classpath
+.project
+.settings/
+.idea/
+.vscode/
+
+# Logs
+*.log
+
+# Uploaded property images
+uploads/property-images/
