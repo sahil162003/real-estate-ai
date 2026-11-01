@@ -2,13 +2,22 @@ import { useCallback, useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../auth/AuthContext";
 import "./AgentDashboard.css";
+import { checkNotificationToken } from "../../api/services/notificationService";
+
+import { connectNotificationWebSocket } from "../../api/services/notificationWebSocket";
+
+import {
+  getMyNotifications,
+  getMyUnreadCount,
+  markNotificationAsRead,
+} from "../../api/services/notificationService";
 
 const API_URL = "http://localhost:8081/api/agent";
 
 export default function AgentDashboard() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
-
+checkNotificationToken();
   const [activeSection, setActiveSection] = useState("dashboard");
   const [inquiries, setInquiries] = useState([]);
   const [responses, setResponses] = useState({});
@@ -17,6 +26,37 @@ export default function AgentDashboard() {
   const [inquiryError, setInquiryError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
   const [submittingId, setSubmittingId] = useState(null);
+  const [notifications, setNotifications] = useState([]);
+const [unreadCount, setUnreadCount] = useState(0);
+const [notificationError, setNotificationError] = useState("");
+const [loadingNotifications, setLoadingNotifications] = useState(false);
+const [showNotifications, setShowNotifications] = useState(false);
+
+
+const fetchNotifications = useCallback(async () => {
+  setLoadingNotifications(true);
+  setNotificationError("");
+
+  try {
+    const [notificationData, countData] = await Promise.all([
+      getMyNotifications(),
+      getMyUnreadCount(),
+    ]);
+
+    setNotifications(
+      Array.isArray(notificationData) ? notificationData : []
+    );
+
+    setUnreadCount(Number(countData));
+  } catch (error) {
+    setNotificationError(
+      error.message || "Unable to load notifications."
+    );
+  } finally {
+    setLoadingNotifications(false);
+  }
+}, []);
+
 
   const displayName =
     user?.firstName ||
@@ -92,6 +132,40 @@ export default function AgentDashboard() {
       fetchInquiries();
     }
   }, [activeSection, inquiriesLoaded, fetchInquiries]);
+
+  
+useEffect(() => {
+  fetchNotifications();
+}, [fetchNotifications]);
+
+
+useEffect(() => {
+  const email = user?.email;
+
+  if (!email) {
+    return;
+  }
+
+  const disconnect = connectNotificationWebSocket(
+    email,
+    (newNotification) => {
+      setNotifications((previous) => [
+        newNotification,
+        ...previous.filter(
+          (notification) => notification.id !== newNotification.id
+        ),
+      ]);
+
+      if (!newNotification.read) {
+        setUnreadCount((previous) => previous + 1);
+      }
+    }
+  );
+
+  return () => {
+    disconnect();
+  };
+}, [user?.email]);
 
   const openInquiries = () => {
     setActiveSection("inquiries");
@@ -323,6 +397,22 @@ export default function AgentDashboard() {
           <Link to="/customer/profile">
             My Profile
           </Link>
+          <button
+  type="button"
+  className="agent-notification-button"
+ onClick={() => {
+  setShowNotifications((previous) => !previous);
+  fetchNotifications();
+}}
+  aria-label={`Notifications, ${unreadCount} unread`}
+>
+  🔔 Notifications
+  {unreadCount > 0 && (
+    <span className="agent-notification-badge">
+      {unreadCount > 99 ? "99+" : unreadCount}
+    </span>
+  )}
+</button>
 
           <button
             type="button"
@@ -333,6 +423,109 @@ export default function AgentDashboard() {
           </button>
         </nav>
       </header>
+      
+{showNotifications && (
+  <section className="agent-notifications-panel">
+    <div className="agent-notifications-header">
+      <div>
+        <span className="agent-notifications-label">
+          ACTIVITY CENTER
+        </span>
+        <h2>Notifications</h2>
+        <p>You have {unreadCount} unread notifications</p>
+      </div>
+
+      <button
+        type="button"
+        className="agent-notifications-refresh"
+        onClick={fetchNotifications}
+        disabled={loadingNotifications}
+      >
+        {loadingNotifications ? "Loading..." : "↻ Refresh"}
+      </button>
+    </div>
+
+    {notificationError && (
+      <div className="agent-notifications-error" role="alert">
+        {notificationError}
+      </div>
+    )}
+
+    {loadingNotifications ? (
+      <div className="agent-notifications-empty">
+        Loading notifications...
+      </div>
+    ) : notifications.length === 0 ? (
+      <div className="agent-notifications-empty">
+        <span className="agent-notifications-empty-icon">🔔</span>
+        <h3>You're all caught up!</h3>
+        <p>New property inquiries will appear here.</p>
+      </div>
+    ) : (
+      <div className="agent-notifications-list">
+        {notifications.map((notification) => (
+          <article
+            key={notification.id}
+            className={`agent-notification-card ${
+              notification.read ? "is-read" : "is-unread"
+            }`}
+          >
+            <div className="agent-notification-icon">
+              {notification.read ? "✓" : "🔔"}
+            </div>
+
+            <div className="agent-notification-content">
+              <div className="agent-notification-title-row">
+                <h3>Property Inquiry</h3>
+
+                {!notification.read && (
+                  <span className="agent-notification-new">
+                    NEW
+                  </span>
+                )}
+              </div>
+
+              <p>{notification.message}</p>
+
+              <div className="agent-notification-footer">
+                <small>
+                  {notification.createdAt
+                    ? new Date(
+                        notification.createdAt
+                      ).toLocaleString()
+                    : ""}
+                </small>
+
+                {!notification.read && (
+                  <button
+                    type="button"
+                    className="agent-notification-read-button"
+                    onClick={async () => {
+                      try {
+                        await markNotificationAsRead(
+                          notification.id
+                        );
+                        await fetchNotifications();
+                      } catch (error) {
+                        setNotificationError(
+                          error.message ||
+                            "Unable to mark as read."
+                        );
+                      }
+                    }}
+                  >
+                    Mark as read
+                  </button>
+                )}
+              </div>
+            </div>
+          </article>
+        ))}
+      </div>
+    )}
+  </section>
+)}
+
 
       {/* Main dashboard */}
       {activeSection === "dashboard" && (

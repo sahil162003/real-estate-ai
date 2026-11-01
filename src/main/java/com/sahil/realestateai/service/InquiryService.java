@@ -33,6 +33,7 @@ public class InquiryService {
     private final InquiryRepository inquiryRepository;
     private final UserRepository userRepository;
     private final PropertyRepository propertyReposittory;
+    private final NotificationProducerService notificationProducerService;
 
     public InquiryResponseDto propertyInquiry(
             Long propertyId,
@@ -83,6 +84,12 @@ public class InquiryService {
 
         PropertyInquiry saved = inquiryRepository.save(propertyInquiry);
 
+     // Send notification to the property owner
+        notificationProducerService.sendInquiryNotification(
+                property.getOwner().getEmail(),
+                user.getFirstName() + " " + user.getLastName(),
+                property.getId()
+        );
         return convertToResponse(saved);
     }
 

@@ -20,6 +20,8 @@ import com.sahil.realestateai.exception.PropertyNotFoundException;
 import com.sahil.realestateai.mapper.PropertyMapper;
 import com.sahil.realestateai.repository.PropertyRepository;
 import com.sahil.realestateai.repository.UserRepository;
+
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -60,6 +62,7 @@ public class PropertyService {
 				.collect(Collectors.toList());
 	}
 
+	@Cacheable(value = "properties", key = "#id")
 	public PropertyResponseDto getProperty(Long id) {
 	 
 		

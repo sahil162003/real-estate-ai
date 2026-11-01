@@ -6,7 +6,7 @@ import org.springframework.data.jpa.domain.Specification;
 import com.sahil.realestateai.entity.Property;
 
 public class PropertySpecification {
-
+//justss
     public static Specification<Property> hasLocation(String location) {
         return (root, query, criteriaBuilder) -> {
             if (location == null || location.isBlank()) {
