@@ -12,7 +12,7 @@ import {
   markNotificationAsRead,
 } from "../../api/services/notificationService";
 
-const API_URL = "http://localhost:8081/api/agent";
+const API_URL = "/api/agent";
 
 export default function AgentDashboard() {
   const { user, logout } = useAuth();

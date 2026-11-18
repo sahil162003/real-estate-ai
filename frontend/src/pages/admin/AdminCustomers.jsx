@@ -2,8 +2,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import "./AdminCustomers.css";
 
-const API_URL = "http://localhost:8081/api/admin/customers";
-
+const API_URL = "/api/admin/customers";
 export default function AdminCustomers() {
   const [customers, setCustomers] = useState([]);
   const [search, setSearch] = useState("");

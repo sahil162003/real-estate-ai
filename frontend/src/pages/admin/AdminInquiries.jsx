@@ -2,8 +2,7 @@
 import { useCallback, useEffect, useState } from "react";
 import "./AdminInquiries.css";
 
-const API_URL = "http://localhost:8081/api/admin/inquiries";
-
+const API_URL = "/api/admin/inquiries";
 function getToken() {
   return (
     localStorage.getItem("token") ||

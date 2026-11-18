@@ -205,8 +205,7 @@ export default function LoginPage() {
   type="button"
   className="google-login-button"
   onClick={() => {
-    window.location.href =
-      "http://localhost:8081/oauth2/authorization/google";
+    window.location.href ="/oauth2/authorization/google";
   }}
 >
   <svg

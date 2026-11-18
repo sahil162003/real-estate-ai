@@ -1,7 +1,7 @@
 
 import { Client } from "@stomp/stompjs";
 
-const WS_URL = "http://localhost:8083/ws-notifications";
+const WS_URL = `${window.location.protocol}//${window.location.host}/ws-notifications`;
 
 export function connectNotificationWebSocket(email, onNotification) {
   if (!email) {

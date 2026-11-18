@@ -2,9 +2,7 @@
 import { useCallback, useEffect, useState } from "react";
 import "./AdminProperties.css";
 
-const API_URL =
-  "http://localhost:8081/api/properties/getAllProperties";
-
+const API_URL ="/api/properties/getAllProperties";
 function getToken() {
   return (
     localStorage.getItem("token") ||

@@ -1,12 +1,12 @@
 
-const NOTIFICATION_API = "http://localhost:8083/api/notifications";
+const NOTIFICATION_API = "/notification-api";
 
 
 const getToken = () =>
-  sessionStorage.getItem("token") ||
-  sessionStorage.getItem("authToken") ||
   localStorage.getItem("token") ||
-  localStorage.getItem("authToken");
+  localStorage.getItem("authToken") ||
+  sessionStorage.getItem("token") ||
+  sessionStorage.getItem("authToken");
 
 
 const getHeaders = () => {
@@ -31,8 +31,8 @@ async function handleResponse(response) {
 }
 
 export async function getMyNotifications() {
-  const response = await fetch(NOTIFICATION_API, {
-    headers: getHeaders(),
+  const response = await fetch(`${NOTIFICATION_API}/all`, {
+    headers: getHeaders()
   });
 
   return handleResponse(response);

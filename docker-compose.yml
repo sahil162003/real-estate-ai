@@ -1,0 +1,98 @@
+
+services:
+
+  # ==================================
+  # Main Spring Boot Backend
+  # ==================================
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+
+    container_name: realestate-backend
+
+    ports:
+      - "8081:8081"
+
+    volumes:
+      - ./uploads/property-images:/app/uploads/property-images
+
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      DB_URL: jdbc:postgresql://host.docker.internal:5432/real_estate_db
+      DB_USERNAME: postgres
+      DB_PASSWORD: ${DB_PASSWORD}
+      REDIS_HOST: realestate-redis
+      KAFKA_BOOTSTRAP_SERVERS: realestate-kafka:29092
+      FRONTEND_URL: ${FRONTEND_URL}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
+      GEMINI_API_KEY: ${GEMINI_API_KEY}
+      JWT_SECRET: ${JWT_SECRET}
+
+    depends_on:
+      - notification
+
+    networks:
+      - realestate-network
+
+    restart: unless-stopped
+
+
+  # ==================================
+  # Notification Spring Boot Service
+  # ==================================
+  notification:
+    build:
+      context: C:/Users/chalk/Documents/workspace-spring-tools-for-eclipse-5.3.0.RELEASE/notification-service
+      dockerfile: Dockerfile
+
+    container_name: realestate-notification
+
+    ports:
+      - "8083:8083"
+
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      DB_URL: jdbc:postgresql://host.docker.internal:5432/notification_service_db
+      DB_USERNAME: postgres
+      DB_PASSWORD: ${DB_PASSWORD}
+      REDIS_HOST: realestate-redis
+      KAFKA_BOOTSTRAP_SERVERS: realestate-kafka:29092
+      REALESTATE_JWT_SECRET: ${JWT_SECRET}
+
+    networks:
+      - realestate-network
+
+    restart: unless-stopped
+
+
+  # ==================================
+  # React Frontend + Nginx
+  # ==================================
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+
+    container_name: realestate-frontend
+
+    ports:
+      - "80:80"
+
+    depends_on:
+      - backend
+      - notification
+
+    networks:
+      - realestate-network
+
+    restart: unless-stopped
+
+
+# ==================================
+# Docker Network
+# ==================================
+networks:
+  realestate-network:
+    driver: bridge
