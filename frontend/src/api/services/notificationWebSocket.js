@@ -1,35 +1,37 @@
 
 import { Client } from "@stomp/stompjs";
 
-const WS_URL = `${window.location.protocol}//${window.location.host}/ws-notifications`;
+const WS_URL =
+  import.meta.env.VITE_NOTIFICATION_WS_URL ||
+  "wss://realestate-notification-service.onrender.com/ws-notifications";
 
 export function connectNotificationWebSocket(email, onNotification) {
   if (!email) {
     throw new Error("User email is required for notifications");
   }
 
-  
-const token =
-  localStorage.getItem("token") ||
-  localStorage.getItem("authToken") ||
-  sessionStorage.getItem("token") ||
-  sessionStorage.getItem("authToken");
+  const token =
+    sessionStorage.getItem("token") ||
+    sessionStorage.getItem("authToken") ||
+    localStorage.getItem("token") ||
+    localStorage.getItem("authToken");
 
-if (!token) {
-  throw new Error("JWT token is missing");
-}
+  if (!token) {
+    throw new Error("JWT token is missing");
+  }
 
-const client = new Client({
-  brokerURL: WS_URL.replace(/^http/, "ws"),
+  const client = new Client({
+    brokerURL: WS_URL,
 
-  connectHeaders: {
-    Authorization: `Bearer ${token}`,
-  },
+    connectHeaders: {
+      Authorization: `Bearer ${token}`,
+    },
 
-  reconnectDelay: 5000,
-
+    reconnectDelay: 5000,
 
     onConnect: () => {
+      console.log("Notification WebSocket connected");
+
       client.subscribe(
         `/topic/notifications/${email.toLowerCase()}`,
         (message) => {

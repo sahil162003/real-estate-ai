@@ -1,13 +1,12 @@
 
-const NOTIFICATION_API = "/notification-api";
-
+const NOTIFICATION_API =
+  `${import.meta.env.VITE_NOTIFICATION_API_URL || "https://realestate-notification-service.onrender.com"}/api/notifications`;
 
 const getToken = () =>
   localStorage.getItem("token") ||
   localStorage.getItem("authToken") ||
   sessionStorage.getItem("token") ||
   sessionStorage.getItem("authToken");
-
 
 const getHeaders = () => {
   const token = getToken();
@@ -32,17 +31,16 @@ async function handleResponse(response) {
 
 export async function getMyNotifications() {
   const response = await fetch(`${NOTIFICATION_API}/all`, {
-    headers: getHeaders()
+    headers: getHeaders(),
   });
 
   return handleResponse(response);
 }
 
 export async function getMyUnreadCount() {
-  const response = await fetch(
-    `${NOTIFICATION_API}/unread-count`,
-    { headers: getHeaders() }
-  );
+  const response = await fetch(`${NOTIFICATION_API}/unread-count`, {
+    headers: getHeaders(),
+  });
 
   return handleResponse(response);
 }
