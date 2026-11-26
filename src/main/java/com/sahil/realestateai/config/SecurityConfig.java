@@ -92,7 +92,8 @@ public class SecurityConfig {
 
             // Authorization rules
             .authorizeHttpRequests(auth -> auth
-
+            		
+            		.requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
             		// Public endpoints
             		.requestMatchers(
             		    "/api/users/register",
