@@ -205,7 +205,7 @@ export default function LoginPage() {
   type="button"
   className="google-login-button"
   onClick={() => {
-    window.location.href ="/oauth2/authorization/google";
+    `${import.meta.env.VITE_API_BASE_URL}/oauth2/authorization/google`;
   }}
 >
   <svg
