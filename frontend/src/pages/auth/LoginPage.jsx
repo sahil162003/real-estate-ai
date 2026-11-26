@@ -201,11 +201,13 @@ export default function LoginPage() {
   <span>OR</span>
 </div>
 
+
 <button
   type="button"
   className="google-login-button"
   onClick={() => {
-    `${import.meta.env.VITE_API_BASE_URL}/oauth2/authorization/google`;
+    window.location.href =
+      `${import.meta.env.VITE_API_BASE_URL}/oauth2/authorization/google`;
   }}
 >
   <svg
@@ -223,22 +225,20 @@ export default function LoginPage() {
     <path
       fill="#4285F4"
       d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.75 7.18l7.73 6C44.42 37.95 46.98 31.8 46.98 24.55z"
-      transform="translate(0 0)"
     />
     <path
       fill="#FBBC05"
       d="M10.14 28.59A14.4 14.4 0 0 1 9.4 24c0-1.59.27-3.13.74-4.59l-7.98-6.19A23.9 23.9 0 0 0 0 24c0 3.87.93 7.52 2.56 10.78l7.58-6.19z"
-      transform="translate(0 0)"
     />
     <path
       fill="#34A853"
       d="M24 48c6.48 0 11.93-2.13 15.91-5.8l-7.73-6c-2.14 1.44-4.89 2.3-8.18 2.3-5.95 0-10.97-4.22-12.86-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"
-      transform="translate(0 0)"
     />
   </svg>
 
   <span>Continue with Google</span>
 </button>
+
 
         </form>
 
