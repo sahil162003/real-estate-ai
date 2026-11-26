@@ -24,9 +24,16 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     private final JwtService jwtService;
     private final CustomUserDetailsService userDetailsService;
 
+    
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
-        return "OPTIONS".equalsIgnoreCase(request.getMethod());
+
+        String path = request.getServletPath();
+
+        return "OPTIONS".equalsIgnoreCase(request.getMethod())
+                || path.startsWith("/oauth2/")
+                || path.startsWith("/login/oauth2/")
+                || path.equals("/error");
     }
     
     @Override
@@ -43,8 +50,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                 || path.equals("/api/users/register")
                 || path.startsWith("/api/images/")
                 || path.equals("/api/images")
-                || path.startsWith("/oauth2/")
-                || path.startsWith("/login/oauth2/")) {
+                ) {
 
             filterChain.doFilter(request, response);
             return;
@@ -53,15 +59,12 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         // Get Authorization header
         String authHeader = request.getHeader("Authorization");
 
-        if (authHeader == null) {
-            sendUnauthorized(response, "Authentication token is required");
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            filterChain.doFilter(request, response);
             return;
         }
 
-        if (!authHeader.startsWith("Bearer ")) {
-            sendUnauthorized(response, "Invalid Authorization header");
-            return;
-        }
+        
 
         String jwt = authHeader.substring(7);
 

@@ -29,7 +29,7 @@ public class GoogleOAuth2SuccessHandler
     private final JwtService jwtService;
     private final PasswordEncoder passwordEncoder;
 
-    @Value("${app.frontend.url:http://localhost:5173}")
+    @Value("${app.frontend.url:https://real-estate-ai-frontend-hcqp.onrender.com}")
     private String frontendUrl;
 
     @Override
