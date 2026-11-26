@@ -14,49 +14,69 @@ export default function GoogleOAuthCallback() {
     if (processed.current) return;
     processed.current = true;
 
-    const token = new URLSearchParams(
-      window.location.hash.substring(1)
-    ).get("token");
+    try {
+      console.log("Google callback started");
+      console.log("Callback URL:", window.location.href);
 
-    // Remove the token from the browser address bar.
-    window.history.replaceState(
-      null,
-      "",
-      window.location.pathname
-    );
+      const token = new URLSearchParams(
+        window.location.hash.substring(1)
+      ).get("token");
 
-    if (!token) {
-      setError("Google login did not return an authentication token.");
-      return;
-    }
+      if (!token) {
+        throw new Error("JWT token is missing from callback URL");
+      }
 
-    const payload = decodeJwt(token);
+      const payload = decodeJwt(token);
 
-    if (!payload || isTokenExpired(token)) {
-      setError("The Google login token is invalid or expired.");
-      return;
-    }
+      if (!payload) {
+        throw new Error("Unable to decode JWT token");
+      }
 
-    const role = String(payload.role || "").replace(/^ROLE_/, "");
+      if (isTokenExpired(token)) {
+        throw new Error("JWT token has expired");
+      }
 
-    if (!["ADMIN", "AGENT", "CUSTOMER"].includes(role)) {
-      setError("Your account has an unsupported role.");
-      return;
-    }
+      const role = String(payload.role || "")
+        .replace(/^ROLE_/, "")
+        .toUpperCase();
 
-    const currentUser = {
-      email: payload.sub,
-      role,
-    };
+      if (!payload.sub) {
+        throw new Error("JWT subject/email is missing");
+      }
 
-    loginWithToken(token, currentUser);
+      if (!["ADMIN", "AGENT", "CUSTOMER"].includes(role)) {
+        throw new Error("Unsupported user role: " + role);
+      }
 
-    if (role === "ADMIN") {
-      navigate("/admin", { replace: true });
-    } else if (role === "AGENT") {
-      navigate("/agent/dashboard", { replace: true });
-    } else {
-      navigate("/customer/search", { replace: true });
+      const currentUser = {
+        email: payload.sub,
+        role
+      };
+
+      loginWithToken(token, currentUser);
+
+      // Remove the token from the address bar after storing it.
+      window.history.replaceState(
+        null,
+        "",
+        window.location.pathname
+      );
+
+      console.log("Google authentication successful");
+      console.log("Stored token:", !!sessionStorage.getItem("token"));
+      console.log("Stored user:", sessionStorage.getItem("user"));
+
+      if (role === "ADMIN") {
+        navigate("/admin", { replace: true });
+      } else if (role === "AGENT") {
+        navigate("/agent/dashboard", { replace: true });
+      } else {
+        navigate("/customer/search", { replace: true });
+      }
+
+    } catch (err) {
+      console.error("Google OAuth callback error:", err);
+      setError(err.message || "Google authentication failed");
     }
   }, [loginWithToken, navigate]);
 
