@@ -1,62 +1,60 @@
 
 import { Client } from "@stomp/stompjs";
 
-const WS_URL =
-  import.meta.env.VITE_NOTIFICATION_WS_URL ||
-  "wss://realestate-notification-service.onrender.com/ws-notifications";
+const WS_URL = `${window.location.protocol}//${window.location.host}/ws-notifications`;
 
 export function connectNotificationWebSocket(email, onNotification) {
-  if (!email) {
-    throw new Error("User email is required for notifications");
-  }
+    if (!email) {
+        throw new Error("User email is required for notifications");
+    }
 
-  const token =
-    sessionStorage.getItem("token") ||
-    sessionStorage.getItem("authToken") ||
-    localStorage.getItem("token") ||
-    localStorage.getItem("authToken");
 
-  if (!token) {
-    throw new Error("JWT token is missing");
-  }
+    const token =
+        localStorage.getItem("token") ||
+        localStorage.getItem("authToken") ||
+        sessionStorage.getItem("token") ||
+        sessionStorage.getItem("authToken");
 
-  const client = new Client({
-    brokerURL: WS_URL,
+    if (!token) {
+        throw new Error("JWT token is missing");
+    }
 
-    connectHeaders: {
-      Authorization: `Bearer ${token}`,
-    },
+    const client = new Client({
+        brokerURL: WS_URL.replace(/^http/, "ws"),
 
-    reconnectDelay: 5000,
+        connectHeaders: {
+            Authorization: `Bearer ${token}`,
+        },
 
-    onConnect: () => {
-      console.log("Notification WebSocket connected");
+        reconnectDelay: 5000,
 
-      client.subscribe(
-        `/topic/notifications/${email.toLowerCase()}`,
-        (message) => {
-          try {
-            const notification = JSON.parse(message.body);
-            onNotification(notification);
-          } catch (error) {
-            console.error("Invalid notification message:", error);
-          }
-        }
-      );
-    },
 
-    onStompError: (frame) => {
-      console.error("WebSocket STOMP error:", frame.headers.message);
-    },
+        onConnect: () => {
+            client.subscribe(
+                `/topic/notifications/${email.toLowerCase()}`,
+                (message) => {
+                    try {
+                        const notification = JSON.parse(message.body);
+                        onNotification(notification);
+                    } catch (error) {
+                        console.error("Invalid notification message:", error);
+                    }
+                }
+            );
+        },
 
-    onWebSocketError: (event) => {
-      console.error("Notification WebSocket error:", event);
-    },
-  });
+        onStompError: (frame) => {
+            console.error("WebSocket STOMP error:", frame.headers.message);
+        },
 
-  client.activate();
+        onWebSocketError: (event) => {
+            console.error("Notification WebSocket error:", event);
+        },
+    });
 
-  return () => {
-    client.deactivate();
-  };
+    client.activate();
+
+    return () => {
+        client.deactivate();
+    };
 }
