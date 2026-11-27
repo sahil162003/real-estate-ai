@@ -30,12 +30,17 @@ public class LocalImageController {
     @GetMapping("/{filename:.+}")
     public ResponseEntity<Resource> getImage(@PathVariable String filename) {
         try {
-            Path filePath = localStorageService.getUploadDirectory()
-                    .resolve(filename)
-                    .normalize();
+            Path uploadDir = localStorageService.getUploadDirectory();
 
-            if (!filePath.startsWith(
-                    localStorageService.getUploadDirectory())) {
+            Path filePath = uploadDir.resolve(filename).normalize();
+
+            System.out.println("========== IMAGE REQUEST ==========");
+            System.out.println("Filename: " + filename);
+            System.out.println("Upload directory: " + uploadDir);
+            System.out.println("File path: " + filePath);
+            System.out.println("File exists: " + java.nio.file.Files.exists(filePath));
+
+            if (!filePath.startsWith(uploadDir)) {
                 throw new ResponseStatusException(
                         HttpStatus.BAD_REQUEST, "Invalid image path");
             }
@@ -58,6 +63,8 @@ public class LocalImageController {
                     .body(resource);
 
         } catch (IOException e) {
+            e.printStackTrace();
+
             throw new ResponseStatusException(
                     HttpStatus.INTERNAL_SERVER_ERROR,
                     "Could not read image", e);
