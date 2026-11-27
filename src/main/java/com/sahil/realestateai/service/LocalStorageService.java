@@ -2,6 +2,7 @@
 package com.sahil.realestateai.service;
 
 import java.io.IOException;
+import org.springframework.beans.factory.annotation.Value;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -67,9 +68,12 @@ public class LocalStorageService implements ImageStorageService {
         return filename;
     }
 
+    @Value("${app.backend.url:http://localhost:8081}")
+    private String backendUrl;
+
     @Override
     public String generateImageUrl(String key) {
-        return "http://localhost:8081/api/images/" + key;
+        return backendUrl + "/api/images/" + key;
     }
 
     @Override
