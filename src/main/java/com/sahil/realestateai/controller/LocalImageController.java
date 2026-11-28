@@ -1,5 +1,6 @@
 
 package com.sahil.realestateai.controller;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -23,6 +24,11 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequestMapping("/api/images")
 @RequiredArgsConstructor
+@ConditionalOnProperty(
+		name = "app.storage.type",
+		havingValue = "local",
+		matchIfMissing = true
+)
 public class LocalImageController {
 
     private final LocalStorageService localStorageService;
